@@ -55,7 +55,6 @@ type GameBoard = BoardLane array array // [axis,row]
 
 let buildGameBoard () = 
     let buildMarbleLanes() =
-        
         seq { 
             yield! buildLanes(seq {1..4})
             yield! buildLanes(seq {13..10})

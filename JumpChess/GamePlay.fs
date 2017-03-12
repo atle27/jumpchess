@@ -17,15 +17,17 @@ type Game = {
 type Move = HoleCoord list
 
 let rec private movesSpan (move:Move) game =
-    let hole = move.Head 
-    let lane = game.board.[hole.axis].[hole.row]
+    let currentHole = move.Head 
+    let currentLane = game.board.[currentHole.axis].[currentHole.row]
     seq {
         for rotation in 0..2 do
-            let rotatedHole = rotatedLaneCoord lane.Length rotation hole
+            let rotatedHole = rotatedLaneCoord currentLane.Length rotation currentHole
             let rotatedLane = game.board.[rotatedHole.axis].[rotatedHole.row]
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 
             then yield move
-            else for i in jumpIndices do yield { rotatedHole with index = i }::move }
+            else for i in jumpIndices do 
+                    let currentMove = { rotatedHole with index = i }::move
+                    yield! movesSpan currentMove game }
             
 let allMoves hole = movesSpan [hole]

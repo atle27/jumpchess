@@ -70,9 +70,7 @@ let private toRotatedCoord rotation (coord:BoardCoord) =
         | 2 -> { x = (coord.x / BoardCoord.xUnit) * -4; 
                  y = coord.y; 
                  rot = coord.rot + 2 }
-        | _ -> { x=coord.x; 
-                 y=coord.y; 
-                 rot=coord.rot}
+        | _ -> coord
 
 let rotatedLaneCoord laneLength rotation (coord:HoleCoord) =
     (toBoardCoord laneLength >> toRotatedCoord rotation >> toHoleCoord laneLength) coord

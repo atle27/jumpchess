@@ -16,7 +16,7 @@ type Game = {
 
 type Move = HoleCoord list
 
-let rec private movesSpan (move:Move) game =
+let rec private movesSpan game (move:Move) =
     let currentHole = move.Head 
     let currentLane = game.board.[currentHole.axis].[currentHole.row]
     seq {
@@ -28,6 +28,6 @@ let rec private movesSpan (move:Move) game =
             then yield move
             else for i in jumpIndices do 
                     let currentMove = { rotatedHole with index = i }::move
-                    yield! movesSpan currentMove game }
+                    yield! movesSpan game currentMove }
             
-let allMoves hole = movesSpan [hole]
+let allMoves game marbleHole = movesSpan game [marbleHole]

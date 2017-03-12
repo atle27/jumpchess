@@ -8,6 +8,15 @@ type MarbleHole = | Empty | Marble of MarbleColor
 
 type MarbleLane = MarbleHole array
 
+let buildLane holeCount = 
+    Array.create holeCount Empty : MarbleLane
+
+let buildLanes holeCounts = 
+    holeCounts |> Seq.map buildLane
+
+let isOutOfBounds (lane:MarbleLane) index = 
+    index < 0 || index >= Array.length lane 
+
 let private reduce (marbleLane:MarbleLane) (index, newMarbleHole) =
     let newMarbleLane = Array.copy marbleLane
     Array.set newMarbleLane index newMarbleHole
@@ -25,13 +34,5 @@ let addMarble (lane:MarbleLane) marbleColor index =
    
 let moveMarble = removeMarble >>* addMarble
 
-let isOutOfBounds (lane:MarbleLane) index = 
-    index < 0 || index >= Array.length lane 
-
-let buildLane holeCount = 
-    Array.create holeCount Empty : MarbleLane
-
-let buildLanes holeCounts = 
-    holeCounts |> Seq.map buildLane
 
 

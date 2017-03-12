@@ -7,7 +7,7 @@ open JumpChess.GameBoard
 type GamePlayer = {
     color:MarbleColor
     order:int // 0..5
-    marbles:(HoleCoord Set) }
+    marbles:HoleCoord Set }
 
 type Game = {
     board:GameBoard
@@ -16,8 +16,8 @@ type Game = {
 
 type Move = HoleCoord list
 
-let rec private movesSpan (moves:Move) (game:Game) =
-    let hole = moves.Head 
+let rec private movesSpan (move:Move) game =
+    let hole = move.Head 
     let lane = game.board.[hole.axis].[hole.row]
     seq {
         for rotation in 0..2 do
@@ -25,10 +25,7 @@ let rec private movesSpan (moves:Move) (game:Game) =
             let rotatedLane = game.board.[rotatedHole.axis].[rotatedHole.row]
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 
-            then yield moves
-            else for index in jumpIndices do
-                    let nextHole = { rotatedHole with index = index }
-                    let newMove = nextHole :: moves
-                    yield newMove }
+            then yield move
+            else for i in jumpIndices do yield { rotatedHole with index = i }::move }
             
-let allMoves (hole:HoleCoord) = movesSpan [hole]
+let allMoves hole = movesSpan [hole]

@@ -55,6 +55,7 @@
     <Compile Include="MarbleLane.fs" />
     <Compile Include="MarbleJump.fs" />
     <Compile Include="GameBoard.fs" />
+    <Compile Include="GamePlay.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
   </ItemGroup>

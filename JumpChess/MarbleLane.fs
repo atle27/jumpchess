@@ -28,8 +28,10 @@ let moveMarble = removeMarble >>* addMarble
 let isOutOfBounds (lane:MarbleLane) index = 
     index < 0 || index >= Array.length lane 
 
-let buildLane holeCount = Array.create holeCount Empty
+let buildLane holeCount = 
+    Array.create holeCount Empty : MarbleLane
 
-let buildLanes holeCounts = holeCounts |> Seq.map buildLane
+let buildLanes holeCounts = 
+    holeCounts |> Seq.map buildLane
 
 

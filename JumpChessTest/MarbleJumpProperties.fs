@@ -18,14 +18,9 @@ let printLane lane =
     for hole in lane do printHole hole
     Debug.WriteLine ""
     
-let rec private emptyHolesInRange (lane:MarbleLane) fromIndex toIndex =
-    if fromIndex > toIndex
-    then 0
-    else
-        let step = if toIndex > fromIndex then 1 else -1
-        if lane.[fromIndex] = Empty then 1 else 0
-        +
-        emptyHolesInRange lane (fromIndex+step) toIndex
+let rec private emptyHolesInRange (lane:MarbleLane) (fromIndex:int) (toIndex:int) =
+    Array.sub lane (Math.Min(fromIndex,toIndex)) (Math.Abs(fromIndex-toIndex)+1)
+    |> Array.fold (fun count hole -> if hole = Empty then count + 1 else count) 0
 
 let isValidJump (isSuperJump:bool) (marbleLane:MarbleLane) (fromIndex:int) (toIndex:int) =
         if (Math.Abs(fromIndex - toIndex) = 1)

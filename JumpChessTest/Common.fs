@@ -23,7 +23,7 @@ let randomMarbleColors () =
     randomColors
 
 let rec addRandomMarblesToLane (marbleLane:MarbleLane) (marbleCount:int) =
-    let index = random.Next (marbleLane.Length-1)
+    let index = random.Next marbleLane.Length
     if (marbleCount = 0)
     then marbleLane
     else

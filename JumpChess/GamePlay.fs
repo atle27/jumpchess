@@ -18,10 +18,9 @@ type Move = HoleCoord list
 
 let rec private movesSpan game (move:Move) =
     let currentHole = move.Head 
-    let currentLane = game.board.[currentHole.axis].[currentHole.row]
     seq {
         for rotation in 0..2 do
-            let rotatedHole = rotatedLaneCoord currentLane.Length rotation currentHole
+            let rotatedHole = rotatedLaneCoord rotation currentHole
             let rotatedLane = game.board.[rotatedHole.axis].[rotatedHole.row]
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 

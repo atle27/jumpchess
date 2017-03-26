@@ -3,7 +3,7 @@
 open JumpChess.Common
 open JumpChess.MarbleLane
 
-let rec emptyHoleCount marbleLane laneIndex direction  =
+let rec emptyHoleCount marbleLane laneIndex direction = // consecutive empty hole count
     let ajacentHole = laneIndex + 1 * direction
     if isOutOfBounds marbleLane ajacentHole
     then 0
@@ -19,7 +19,7 @@ let rec private superJumpIndices marbleLane marbleIndex jumpDirection =
         let endEmptyHoleCount = emptyHoleCount marbleLane jumpOverIndex jumpDirection
         if (endEmptyHoleCount > beforeJumpEmptyHoleCount) 
         then
-            let jumpToLocation = (beforeJumpEmptyHoleCount+1) * 2
+            let jumpToLocation = marbleIndex + (beforeJumpEmptyHoleCount+1) * 2
             yield jumpToLocation
             yield! superJumpIndices marbleLane jumpToLocation jumpDirection
         else yield! Seq.empty }

@@ -7,21 +7,21 @@ open JumpChess.GameBoard
 type GamePlayer = {
     color:MarbleColor
     order:int // 0..5
-    marbles:HoleCoord Set }
+    marbles:LaneCoord Set }
 
 type Game = {
     board:GameBoard
     players:GamePlayer list
     isSuperJump:bool }
 
-type Move = HoleCoord list
+type Move = LaneCoord list
 
 let rec private movesSpan game (move:Move) =
     let currentHole = move.Head 
     seq {
         for rotation in 0..2 do
             let rotatedHole = rotatedLaneCoord rotation currentHole
-            let rotatedLane = game.board.[rotatedHole.axis].[rotatedHole.row]
+            let rotatedLane = game.board.[rotatedHole.axis].[gameLaneIndex rotatedHole.row]
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 
             then yield move

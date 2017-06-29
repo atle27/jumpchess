@@ -53,7 +53,7 @@ let laneLengthRange = Gen.elements [1..13] |> Arb.fromGen
 
 let percentageRange = Gen.elements [1..100] |> Arb.fromGen
 
-[<Property(QuietOnSuccess = true)>]
+[<Property>]
 let ``All jumps are valid`` () =
     Prop.forAll laneLengthRange <| fun laneLength ->
         Prop.forAll percentageRange <| fun fillPercentage ->

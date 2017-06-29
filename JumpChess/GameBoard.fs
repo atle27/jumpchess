@@ -11,10 +11,6 @@ open JumpChess.MarbleLane
 
 type GameBoard = MarbleLane array array // [axis,row]
 
-let x = seq {10..13}
-
-let private reverse seq = System.Linq.Enumerable.Reverse seq
-
 let buildGameBoard () = 
     let buildGameLanes () =
         seq { 

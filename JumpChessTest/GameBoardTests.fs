@@ -12,7 +12,6 @@ open JumpChessTest.Common
 let ``Any of the game board lanes have the same length as the lanes one the real physical board`` () =
     Assert.True(gameBoard.[2].[8].Length = 9)
     Assert.True(gameBoard.[1].[2].Length = 3)
-    let x = gameBoard.[0].[5].Length
     Assert.True(gameBoard.[0].[5].Length = 12)
    
 let boardRotRange = Gen.elements [0..2] |> Arb.fromGen

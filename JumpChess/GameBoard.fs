@@ -105,4 +105,12 @@ let private toRotatedCoord rotation (coord:BoardCoord) =
 let rotatedLaneCoord rotation (coord:LaneCoord) =
     (toBoardCoord >> toRotatedCoord rotation >> toLaneCoord) coord
 
+let reduceGameBoard (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = gameBoard // to be implemented
+
+let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) = gameBoard , Red // to be implemented
+
+let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) = gameBoard // to be implemented
+
+let moveGameMarble = removeGameMarble >>* addGameMarble
+
 

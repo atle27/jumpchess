@@ -21,7 +21,7 @@ let rec private movesSpan game (move:Move) =
     seq {
         for rotation in 0..2 do
             let rotatedHole = rotatedLaneCoord rotation currentHole
-            let rotatedLane = game.board.[rotatedHole.axis].[gameLaneIndex rotatedHole.row]
+            let rotatedLane = game.board.[rotatedHole.axis].[gameLaneRowIndex rotatedHole.row]
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 
             then yield move

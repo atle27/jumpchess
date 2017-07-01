@@ -42,10 +42,10 @@ type LaneCoord = {
         | _ -> false
     override x.GetHashCode() = hash (x.index, x.row, x.axis)
     interface System.IComparable with
-      member x.CompareTo obj =
-          match obj with
-          | :? LaneCoord as y -> compare (x.index, x.row, x.axis) (y.index, y.row, y.axis)
-          | _ -> raise <| InvalidOperationException()
+        member x.CompareTo obj =
+            match obj with
+            | :? LaneCoord as y -> compare (x.index, x.row, x.axis) (y.index, y.row, y.axis)
+            | _ -> raise <| InvalidOperationException()
 
 [<CustomEquality; CustomComparison>]
 type BoardCoord = { 
@@ -60,16 +60,16 @@ type BoardCoord = {
     member this.laneLength = gameBoard.[this.axis].[gameLaneRowIndex (this.y / BoardCoord.yUnit)].Length
     static member xUnit = 4
     static member yUnit = 2
-      override x.Equals(obj) =
+    override x.Equals(obj) =
         match obj with
         | :? BoardCoord as y -> x.x = y.x && x.y = y.y && x.axis = y.axis
         | _ -> false
     override x.GetHashCode() = hash (x.x, x.y, x.rot)
     interface System.IComparable with
-      member x.CompareTo obj =
-          match obj with
-          | :? BoardCoord as y -> compare (x.x, x.y, x.axis) (y.x, y.y, y.axis)
-          | _ -> raise <| InvalidOperationException()
+        member x.CompareTo obj =
+            match obj with
+            | :? BoardCoord as y -> compare (x.x, x.y, x.axis) (y.x, y.y, y.axis)
+            | _ -> raise <| InvalidOperationException()
 
 let toLaneCoord (coord:BoardCoord) =
     let centeredIndex = coord.x / BoardCoord.xUnit

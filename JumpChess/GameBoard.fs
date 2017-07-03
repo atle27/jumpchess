@@ -26,6 +26,8 @@ let gameBoard = buildGameBoard()
 
 let gameLaneRowIndex boardLaneRow = 8 - boardLaneRow // board lane row is zero at the middle of board
 
+let gameLaneAxis rotation = Math.Abs(rotation % 3)
+
 [<CustomEquality; CustomComparison>]
 type LaneCoord = { 
     // Coordinates for marble lanes on the game board
@@ -33,7 +35,7 @@ type LaneCoord = {
     row:int // lane row (value 0 at the center of the board)
     rot:int // lane rotation (in steps of 120 degrees, i.e. 2 = 240 degrees)
     } with
-    member x.axis = Math.Abs(x.rot % 3)
+    member x.axis = gameLaneAxis x.rot
     member x.angle = x.axis * 120
     member this.laneLength = gameBoard.[this.axis].[gameLaneRowIndex this.row].Length
     override x.Equals(obj) =
@@ -102,14 +104,47 @@ let private toRotatedCoord rotation (coord:BoardCoord) =
                  rot = coord.rot + 2 }
         | _ -> coord
 
-let rotatedLaneCoord rotation (coord:LaneCoord) =
+let toRotatedLaneCoord rotation (coord:LaneCoord) =
     (toBoardCoord >> toRotatedCoord rotation >> toLaneCoord) coord
 
-let reduceGameBoard (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = gameBoard // to be implemented
+let reduceGameBoardAxisLaneState (gameBoard:GameBoard) (axis:int, row:int, newLaneState:MarbleLane) =     
+    [| for a in { 0 .. 2 } ->
+         [| for r in { 0 .. gameBoard.[a].Length-1 } ->
+                if (a=axis && r=row)
+                then newLaneState
+                else gameBoard.[a].[r] |] |] : GameBoard
 
-let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) = gameBoard , Red // to be implemented
+let rec reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) (startAxis:int) = 
+    let i = marbleHolePosition.index
+    let r = marbleHolePosition.row
+    let a = marbleHolePosition.axis
+    let newLane = reduceMarbleLaneState gameBoard.[a].[r] (i,newMarbleHoleState)
+    let newGameBoard = reduceGameBoardAxisLaneState gameBoard (a, r, newLane)
+    let nextAxis = gameLaneAxis (marbleHolePosition.axis + 1)
+    if (nextAxis = startAxis)
+    then newGameBoard
+    else
+        let nextMarbleHolePosition = toRotatedLaneCoord nextAxis marbleHolePosition  
+        reduceGameBoardAllAxisStates newGameBoard (nextMarbleHolePosition,newMarbleHoleState) startAxis
 
-let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) = gameBoard // to be implemented
+let reduceGameBoardState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = 
+    reduceGameBoardAllAxisStates gameBoard (marbleHolePosition, newMarbleHoleState) marbleHolePosition.axis
+
+let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
+    let i = marbleHolePosition.index
+    let r = marbleHolePosition.row
+    let a = marbleHolePosition.axis
+    match gameBoard.[a].[r].[i] with
+        | Empty -> failwith "Lane hole does not contain a marble!"
+        | Marble(marbleColor) -> (reduceGameBoardState gameBoard (marbleHolePosition,Empty)), marbleColor
+       
+let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) =
+    let i = marbleHolePosition.index
+    let r = marbleHolePosition.row
+    let a = marbleHolePosition.axis
+    match gameBoard.[a].[r].[i] with
+        | Empty -> reduceGameBoardState gameBoard (marbleHolePosition, Marble(marbleColor))
+        | _ -> failwith "Lane hole already contains a marble!"
 
 let moveGameMarble = removeGameMarble >>* addGameMarble
 

@@ -73,36 +73,64 @@ type BoardCoord = {
             | :? BoardCoord as y -> compare (x.x, x.y, x.axis) (y.x, y.y, y.axis)
             | _ -> raise <| InvalidOperationException()
 
+let private halfUnitAdjustment (x:int) isOdddLaneLength = 
+    // Marble lanes with even length is adjusted with 1/2 a coordinate-unit for the first hole in positive 
+    // and negative direction then hole distance is 1 unit for the remaining holes. This is done because 
+    // the marbles are not lying in a rectangular grid but the marble hole of a ajacent marble lane are 
+    // shifted 1/2 unit hence we adjust for 1/2 unit for even length rows.
+    if isOdddLaneLength then 0 else Math.Sign(x) * BoardCoord.xUnit/2
+
 let toLaneCoord (coord:BoardCoord) =
-    let centeredIndex = coord.x / BoardCoord.xUnit
-    let index = 
-        if isOdd coord.laneLength
-        then centeredIndex + (coord.laneLength-1)/2
+    let isOdddLaneLength = isOdd coord.laneLength
+    let index = (coord.x + (halfUnitAdjustment coord.x isOdddLaneLength)) / BoardCoord.xUnit
+    let centeredIndex = 
+        if isOdddLaneLength
+        then index + (coord.laneLength-1)/2
         else 
-            if centeredIndex < 0
-            then centeredIndex + coord.laneLength/2
-            else centeredIndex + coord.laneLength/2 - 1
-    { index = index; row = coord.y / BoardCoord.yUnit; rot = coord.rot }
+            if index < 0
+            then index + coord.laneLength/2
+            else index + coord.laneLength/2 - 1
+    { index = centeredIndex; row = coord.y / BoardCoord.yUnit; rot = coord.rot }
 
 let toBoardCoord (coord:LaneCoord) =
+    let isOdddLaneLength = isOdd coord.laneLength
     let centeredIndex = 
-        if isOdd coord.laneLength
+        if isOdddLaneLength
         then coord.index - (coord.laneLength-1)/2
         else 
             if coord.index < coord.laneLength/2
             then coord.index - (coord.laneLength)/2
             else coord.index - (coord.laneLength)/2 + 1
-    { x = centeredIndex * BoardCoord.xUnit; y = coord.row * BoardCoord.yUnit; rot = coord.axis }
+    { x = centeredIndex * BoardCoord.xUnit - (halfUnitAdjustment centeredIndex isOdddLaneLength); 
+      y = coord.row * BoardCoord.yUnit; rot = coord.axis }
 
 let private toRotatedCoord rotation (coord:BoardCoord) =
-        match (rotation % 3) with 
-        | 1 -> { x = (coord.x / BoardCoord.xUnit) * 2; 
-                 y = (coord.y / BoardCoord.yUnit) * -2; 
-                 rot = coord.rot + 1 }
-        | 2 -> { x = (coord.x / BoardCoord.xUnit) * -4; 
-                 y = coord.y; 
-                 rot = coord.rot + 2 }
-        | _ -> coord
+    let rot = rotation % 3
+    let xPart = 
+        if rot = 1 then
+            if (coord.x <> 0) 
+            then -coord.x / 2, -coord.x / 2
+            else 0, 0
+        elif rot = 2 then
+            if (coord.x <> 0) 
+            then -coord.x / 2, coord.x / 2
+            else 0, 0
+        else
+            coord.x, 0
+    let yPart = 
+        if rot = 1 then
+            if (coord.y <> 0) 
+            then 3 * (coord.y / 2), -coord.y / 2
+            else 0, 0
+        elif rot = 2 then
+            if (coord.y <> 0) 
+            then -3 * (coord.y / 2), -coord.y / 2
+            else 0, 0
+        else
+            0, coord.y
+    let x1,y1 = xPart
+    let x2,y2 = yPart
+    { x = x1+x2; y = y1+y2; rot = coord.rot+rot }
 
 let toRotatedLaneCoord rotation (coord:LaneCoord) =
     (toBoardCoord >> toRotatedCoord rotation >> toLaneCoord) coord

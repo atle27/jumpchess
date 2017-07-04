@@ -31,9 +31,23 @@ let ``Verify correct conversion from board coords to lane coords`` () =
 [<Fact>]
 let ``Verify correct conversion from lane coords to board coords`` () =
     let laneCoord = { index = 0; row = -5; rot = -5 }
-    let boardCoordExpected = { x = -8; y = -10; rot = 2 }
+    let boardCoordExpected = { x = -6; y = -10; rot = 2 }
     let boardCoordActual = toBoardCoord laneCoord
     Assert.Equal(boardCoordActual, boardCoordExpected)
+
+[<Fact>]
+let ``Verify correct conversion for rotated lane coord (test 1)`` () =
+    let laneCoord = { index = 0; row = 0; rot = 0 }
+    let actualLaneCoord = toRotatedLaneCoord 1 laneCoord
+    let expectedLaneCord = { index =8; row = 4; rot = 1}
+    Assert.Equal(actualLaneCoord, expectedLaneCord)
+
+[<Fact>]
+let ``Verify correct conversion for rotated lane coord (test 2)`` () =
+    let laneCoord = { index = 1; row = 5; rot = 1 }
+    let actualLaneCoord = toRotatedLaneCoord 1 laneCoord
+    let expectedLaneCord = { index = 9; row = -2; rot = 2 }
+    Assert.Equal(actualLaneCoord, expectedLaneCord)
 
 let boardAxisRange = Gen.elements [0..2] |> Arb.fromGen
 let boardRowRange = Gen.elements [-8..8] |> Arb.fromGen
@@ -47,15 +61,27 @@ let ``When converting between lane and board coordinates the rotation does not c
             Assert.True(laneCoord.rot = boardCoord.rot)
 
 [<Property>]
-let ``When converting from lane coord. to board coord. and back we should arrive at the initial location`` () =
+let ``When converting back and forth between lane coord. and board coord. we should arrive at the initial location`` () =
     Prop.forAll boardAxisRange <| fun axis ->
         Prop.forAll boardRowRange <| fun row ->
             let lane = gameBoard.[axis].[gameLaneRowIndex row]
             let laneIndex = randomMarbleLaneIndex lane
             let laneCoord = { index = laneIndex; row = row; rot = axis }
-            let boardCoord = toBoardCoord laneCoord
-            let laneCoord2 = toLaneCoord boardCoord
-            Assert.Equal(laneCoord, laneCoord2)
+            let laneCoordConvertBackAndForth = toLaneCoord (toBoardCoord laneCoord)
+            Assert.Equal(laneCoord, laneCoordConvertBackAndForth)
+
+[<Property>]
+let ``When converting rotated lane coord. stepwise in a full circle we should arrive at the initial location`` () =
+    Prop.forAll boardAxisRange <| fun axis ->
+        Prop.forAll boardRowRange <| fun row ->
+            let lane = gameBoard.[axis].[gameLaneRowIndex row]
+            let laneIndex = randomMarbleLaneIndex lane
+            let initialLaneCoord = { index = laneIndex; row = row; rot = axis }
+            let fullCircleRotatedLaneCoord = (toRotatedLaneCoord 1 (toRotatedLaneCoord 1 (toRotatedLaneCoord 1 initialLaneCoord)))
+            Assert.Equal(initialLaneCoord, fullCircleRotatedLaneCoord)
+
+
+
 
 
     

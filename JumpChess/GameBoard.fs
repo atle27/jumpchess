@@ -144,7 +144,7 @@ let reduceGameBoardAxisLaneState (gameBoard:GameBoard) (axis:int, row:int, newLa
 
 let rec reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) (startAxis:int) = 
     let i = marbleHolePosition.index
-    let r = marbleHolePosition.row
+    let r = gameLaneRowIndex marbleHolePosition.row
     let a = marbleHolePosition.axis
     let newLane = reduceMarbleLaneState gameBoard.[a].[r] (i,newMarbleHoleState)
     let newGameBoard = reduceGameBoardAxisLaneState gameBoard (a, r, newLane)
@@ -160,7 +160,7 @@ let reduceGameBoardState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, ne
 
 let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
     let i = marbleHolePosition.index
-    let r = marbleHolePosition.row
+    let r = gameLaneRowIndex marbleHolePosition.row
     let a = marbleHolePosition.axis
     match gameBoard.[a].[r].[i] with
         | Empty -> failwith "Lane hole does not contain a marble!"
@@ -168,7 +168,7 @@ let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
        
 let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) =
     let i = marbleHolePosition.index
-    let r = marbleHolePosition.row
+    let r = gameLaneRowIndex marbleHolePosition.row
     let a = marbleHolePosition.axis
     match gameBoard.[a].[r].[i] with
         | Empty -> reduceGameBoardState gameBoard (marbleHolePosition, Marble(marbleColor))

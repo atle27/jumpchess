@@ -39,6 +39,16 @@ let renderGameBoard (gameBoard:GameBoard) =
 [<EntryPoint>]
 let main argv = 
     Console.SetWindowSize (55, 36)
-    renderGameBoard gameBoard
+    let gameBoardWith3AdjacentMarblesOnLaneWith120DegreeAxis = 
+        addGameMarble
+            (addGameMarble
+                (addGameMarble 
+                    gameBoard 
+                    Green { index = 4; row = -2; rot = 1 })
+                Green 
+                { index = 5; row = -2; rot = 1 })
+            Green 
+            { index = 6; row = -2; rot = 1 }
+    renderGameBoard gameBoardWith3AdjacentMarblesOnLaneWith120DegreeAxis
     Console.ReadKey() |> ignore
     0

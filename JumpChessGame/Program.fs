@@ -43,7 +43,7 @@ let main argv =
         addGameMarble
             (addGameMarble
                 (addGameMarble 
-                    gameBoard 
+                    emptyGameBoard 
                     Red { index = 4; row = -2; rot = 1 })
                 Green 
                 { index = 5; row = -2; rot = 1 })

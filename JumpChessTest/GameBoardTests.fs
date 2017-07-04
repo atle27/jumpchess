@@ -10,9 +10,9 @@ open JumpChessTest.Common
 
 [<Fact>]
 let ``Any of the game board lanes have the same length as the lanes one the real physical board`` () =
-    Assert.True(gameBoard.[2].[8].Length = 9)
-    Assert.True(gameBoard.[1].[2].Length = 3)
-    Assert.True(gameBoard.[0].[5].Length = 12)
+    Assert.True(emptyGameBoard.[2].[8].Length = 9)
+    Assert.True(emptyGameBoard.[1].[2].Length = 3)
+    Assert.True(emptyGameBoard.[0].[5].Length = 12)
 
 [<Fact>]
 let ``Verify correct conversion from board origin to lane coords`` () =
@@ -64,7 +64,7 @@ let ``When converting between lane and board coordinates the rotation does not c
 let ``When converting back and forth between lane coord. and board coord. we should arrive at the initial location`` () =
     Prop.forAll boardAxisRange <| fun axis ->
         Prop.forAll boardRowRange <| fun row ->
-            let lane = gameBoard.[axis].[gameLaneRowIndex row]
+            let lane = emptyGameBoard.[axis].[gameBoardRow row]
             let laneIndex = randomMarbleLaneIndex lane
             let laneCoord = { index = laneIndex; row = row; rot = axis }
             let laneCoordConvertBackAndForth = toLaneCoord (toBoardCoord laneCoord)
@@ -74,7 +74,7 @@ let ``When converting back and forth between lane coord. and board coord. we sho
 let ``When converting rotated lane coord. stepwise in a full circle we should arrive at the initial location`` () =
     Prop.forAll boardAxisRange <| fun axis ->
         Prop.forAll boardRowRange <| fun row ->
-            let lane = gameBoard.[axis].[gameLaneRowIndex row]
+            let lane = emptyGameBoard.[axis].[gameBoardRow row]
             let laneIndex = randomMarbleLaneIndex lane
             let initialLaneCoord = { index = laneIndex; row = row; rot = axis }
             let fullCircleRotatedLaneCoord = (toRotatedLaneCoord 1 (toRotatedLaneCoord 1 (toRotatedLaneCoord 1 initialLaneCoord)))

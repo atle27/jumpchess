@@ -55,7 +55,7 @@
     <Content Include="packages.config" />
     <Compile Include="Common.fs" />
     <Compile Include="MarbleLaneTests.fs" />
-    <Compile Include="MarbleJumpProperties.fs" />
+    <Compile Include="MarbleJumpTests.fs" />
     <Compile Include="GameBoardTests.fs" />
   </ItemGroup>
   <ItemGroup>

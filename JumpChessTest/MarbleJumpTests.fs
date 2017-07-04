@@ -1,4 +1,4 @@
-﻿module JumpChessTest.MarbleJumpProperties
+﻿module JumpChessTest.MarbleJumpTests
 
 open System
 open System.Diagnostics

@@ -44,10 +44,10 @@ let main argv =
             (addGameMarble
                 (addGameMarble 
                     gameBoard 
-                    Green { index = 4; row = -2; rot = 1 })
+                    Red { index = 4; row = -2; rot = 1 })
                 Green 
                 { index = 5; row = -2; rot = 1 })
-            Green 
+            Blue 
             { index = 6; row = -2; rot = 1 }
     renderGameBoard gameBoardWith3AdjacentMarblesOnLaneWith120DegreeAxis
     Console.ReadKey() |> ignore

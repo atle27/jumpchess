@@ -25,7 +25,7 @@ let emptyGameBoard = buildGameBoard()
 
 let gameBoardRow row = 8 - row // converts from rows that are zero at the middle of board to game board rows
 
-let gameBoardAxis rotation = Math.Abs(rotation % 3) // converts from a rotation to one of the 3 major game board axes.
+let gameBoardAxis rotation = ((rotation % 3) + 3) % 3 // converts from a rotation to one of the 3 major game board axes.
 
 [<CustomEquality; CustomComparison>]
 type LaneCoord = { 
@@ -104,7 +104,7 @@ let toBoardCoord (coord:LaneCoord) =
       y = coord.row * BoardCoord.yUnit; rot = coord.axis }
 
 let private toRotatedCoord rotation (coord:BoardCoord) =
-    let rot = rotation % 3
+    let rot = gameBoardAxis rotation
     let xCoordTransform = 
         if rot = 1 then
             if (coord.x <> 0) 
@@ -134,6 +134,9 @@ let private toRotatedCoord rotation (coord:BoardCoord) =
 let toRotatedLaneCoord rotation (coord:LaneCoord) =
     (toBoardCoord >> toRotatedCoord rotation >> toLaneCoord) coord
 
+let toAxisLaneCoord axis (coord:LaneCoord) =
+    toRotatedLaneCoord (axis - coord.axis) coord
+
 let reduceGameBoardAxisLaneState (gameBoard:GameBoard) (axis:int, row:int, newLaneState:MarbleLane) =     
     [| for a in { 0 .. 2 } ->
          [| for r in { 0 .. gameBoard.[a].Length-1 } ->
@@ -151,7 +154,7 @@ let rec reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:L
     if (nextAxis = startAxis)
     then newGameBoard
     else
-        let nextMarbleHolePosition = toRotatedLaneCoord nextAxis marbleHolePosition  
+        let nextMarbleHolePosition = toRotatedLaneCoord 1 marbleHolePosition  
         reduceGameBoardAllAxisStates newGameBoard (nextMarbleHolePosition,newMarbleHoleState) startAxis
 
 let reduceGameBoardState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = 

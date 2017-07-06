@@ -2,6 +2,7 @@
 open JumpChess.Common
 open JumpChess.MarbleLane
 open JumpChess.GameBoard
+open JumpChess.GamePlay
 
 let renderMarbleHole (marbleHole:MarbleHole) =
     let marbleConsoleColor = 
@@ -39,16 +40,25 @@ let renderGameBoard (gameBoard:GameBoard) =
 [<EntryPoint>]
 let main argv = 
     Console.SetWindowSize (55, 36)
-    let gameBoardWith3AdjacentMarblesOnLaneWith120DegreeAxis = 
-        addGameMarble
-            (addGameMarble
-                (addGameMarble 
-                    emptyGameBoard 
-                    Red { index = 4; row = -2; rot = 1 })
-                Green 
-                { index = 5; row = -2; rot = 1 })
-            Blue 
-            { index = 6; row = -2; rot = 1 }
-    renderGameBoard gameBoardWith3AdjacentMarblesOnLaneWith120DegreeAxis
+
+    let marbleToMoveLaneCoord = { index = 7; row = -1; rot = 0 } 
+
+    let mutable gameBoard = emptyGameBoard
+
+    gameBoard <- addGameMarble gameBoard Yellow { index = 4; row = -2; rot = 1 }
+    gameBoard <- addGameMarble gameBoard Yellow { index = 7; row = -2; rot = 1 }
+    gameBoard <- addGameMarble gameBoard Red { index = 5; row = 0; rot = 0 }
+    gameBoard <- addGameMarble gameBoard Blue { index = 6; row = -1; rot = 2 } 
+
+    gameBoard <- addGameMarble gameBoard White marbleToMoveLaneCoord 
+
+    renderGameBoard gameBoard
+
+    let game = { board = gameBoard; players = []; isSuperJump = true }
+
+    let movesSpan = allMoves game marbleToMoveLaneCoord
+
+    let numberOfMoves = (Seq.toList movesSpan).Length
+
     Console.ReadKey() |> ignore
     0

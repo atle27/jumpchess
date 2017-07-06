@@ -16,21 +16,21 @@ let ``Any of the game board lanes have the same length as the lanes one the real
 
 [<Fact>]
 let ``Verify correct conversion from board origin to lane coords`` () =
-    let boardCoord = { x = 0; y = 0; rot = -4 }
+    let boardCoord = { x = 0; y = 0; rot = 4 }
     let landCoordExpected = { index = 4; row = 0; rot = 1 }
     let laneCoordActual = toLaneCoord boardCoord
     Assert.Equal(laneCoordActual, landCoordExpected)
 
 [<Fact>]
 let ``Verify correct conversion from board coords to lane coords`` () =
-    let boardCoord = { x = -8; y = 4; rot = -4 }
+    let boardCoord = { x = -8; y = 4; rot = 4 }
     let landCoordExpected = { index = 3; row = 2; rot = 1 }
     let laneCoordActual = toLaneCoord boardCoord
     Assert.Equal(laneCoordActual, landCoordExpected)
 
 [<Fact>]
 let ``Verify correct conversion from lane coords to board coords`` () =
-    let laneCoord = { index = 0; row = -5; rot = -5 }
+    let laneCoord = { index = 0; row = -5; rot = 5 }
     let boardCoordExpected = { x = -6; y = -10; rot = 2 }
     let boardCoordActual = toBoardCoord laneCoord
     Assert.Equal(boardCoordActual, boardCoordExpected)

@@ -45,20 +45,24 @@ let main argv =
 
     let mutable gameBoard = emptyGameBoard
 
-    gameBoard <- addGameMarble gameBoard Yellow { index = 4; row = -2; rot = 1 }
-    gameBoard <- addGameMarble gameBoard Yellow { index = 7; row = -2; rot = 1 }
+    gameBoard <- addGameMarble gameBoard Red { index = 4; row = -2; rot = 1 }
+    gameBoard <- addGameMarble gameBoard Red { index = 7; row = -2; rot = 1 }
     gameBoard <- addGameMarble gameBoard Red { index = 5; row = 0; rot = 0 }
-    gameBoard <- addGameMarble gameBoard Blue { index = 6; row = -1; rot = 2 } 
-
-    gameBoard <- addGameMarble gameBoard White marbleToMoveLaneCoord 
-
-    renderGameBoard gameBoard
+    gameBoard <- addGameMarble gameBoard Red { index = 6; row = -1; rot = 2 } 
+    gameBoard <- addGameMarble gameBoard Red { index = 5; row = 4; rot = 0 } 
 
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
     let movesSpan = allMoves game marbleToMoveLaneCoord
 
-    let numberOfMoves = (Seq.toList movesSpan).Length
+    for move in movesSpan do
+        for moveStep in move do
+            gameBoard <- addGameMarble gameBoard White moveStep 
+
+    gameBoard <- addGameMarble gameBoard Green marbleToMoveLaneCoord 
+
+    renderGameBoard gameBoard
 
     Console.ReadKey() |> ignore
+
     0

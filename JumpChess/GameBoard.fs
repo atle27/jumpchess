@@ -50,7 +50,7 @@ type LaneCoord = {
             | _ -> raise <| InvalidOperationException()
 
 [<CustomEquality; CustomComparison>]
-type BoardCoord = { 
+type internal BoardCoord = { 
     // Internal coordinate system.
     // Is used to convert between LaneCoord-s on lanes with different axes that corresponds to the same physical marble hole.
     // The BoardCoord uses 4 as unit on x-axis and 2 on y-axis such that the conversion function can be kept as integer calculations
@@ -79,7 +79,7 @@ let private halfUnitAdjustment (x:int) isOdddLaneLength =
     // of a ajacent marble lane are shifted 1/2 unit.
     if isOdddLaneLength then 0 else Math.Sign(x) * BoardCoord.xUnit/2
 
-let toLaneCoord (coord:BoardCoord) =
+let internal toLaneCoord (coord:BoardCoord) =
     let isOdddLaneLength = isOdd coord.laneLength
     let index = (coord.x + (halfUnitAdjustment coord.x isOdddLaneLength)) / BoardCoord.xUnit
     let centeredIndex = 
@@ -91,7 +91,7 @@ let toLaneCoord (coord:BoardCoord) =
             else index + coord.laneLength/2 - 1
     { index = centeredIndex; row = coord.y / BoardCoord.yUnit; rot = coord.rot }
 
-let toBoardCoord (coord:LaneCoord) =
+let internal toBoardCoord (coord:LaneCoord) =
     let isOdddLaneLength = isOdd coord.laneLength
     let centeredIndex = 
         if isOdddLaneLength
@@ -137,14 +137,14 @@ let toRotatedLaneCoord rotation (coord:LaneCoord) =
 let toAxisLaneCoord axis (coord:LaneCoord) =
     toRotatedLaneCoord (axis - coord.axis) coord
 
-let reduceGameBoardAxisLaneState (gameBoard:GameBoard) (axis:int, row:int, newLaneState:MarbleLane) =     
+let private reduceGameBoardAxisLaneState (gameBoard:GameBoard) (axis:int, row:int, newLaneState:MarbleLane) =     
     [| for a in { 0 .. 2 } ->
          [| for r in { 0 .. gameBoard.[a].Length-1 } ->
                 if (a=axis && r=row)
                 then newLaneState
                 else gameBoard.[a].[r] |] |] : GameBoard
 
-let rec reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) (startAxis:int) = 
+let rec private reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) (startAxis:int) = 
     let i = marbleHolePosition.index
     let r = gameBoardRow marbleHolePosition.row
     let a = marbleHolePosition.axis
@@ -157,7 +157,7 @@ let rec reduceGameBoardAllAxisStates (gameBoard:GameBoard) (marbleHolePosition:L
         let nextMarbleHolePosition = toRotatedLaneCoord 1 marbleHolePosition  
         reduceGameBoardAllAxisStates newGameBoard (nextMarbleHolePosition,newMarbleHoleState) startAxis
 
-let reduceGameBoardState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = 
+let private reduceGameBoardState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, newMarbleHoleState) = 
     reduceGameBoardAllAxisStates gameBoard (marbleHolePosition, newMarbleHoleState) marbleHolePosition.axis
 
 let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
@@ -174,7 +174,7 @@ let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePos
     let a = marbleHolePosition.axis
     match gameBoard.[a].[r].[i] with
         | Empty -> reduceGameBoardState gameBoard (marbleHolePosition, Marble(marbleColor))
-        | _ -> failwith "Lane hole already contains a marble!"
+        | _ -> reduceGameBoardState gameBoard (marbleHolePosition, Marble(marbleColor)) // failwith "Lane hole already contains a marble!"
 
 let moveGameMarble = removeGameMarble >>* addGameMarble
 

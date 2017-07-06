@@ -17,7 +17,7 @@ let buildLanes holeCounts =
 let isOutOfBounds (lane:MarbleLane) index = 
     index < 0 || index >= Array.length lane 
 
-let reduceMarbleLaneState (marbleLane:MarbleLane) (marbleHoleIndex, newMarbleHoleState) =
+let internal reduceMarbleLaneState (marbleLane:MarbleLane) (marbleHoleIndex, newMarbleHoleState) =
     let newMarbleLane = Array.copy marbleLane
     Array.set newMarbleLane marbleHoleIndex newMarbleHoleState
     (newMarbleLane:MarbleLane)

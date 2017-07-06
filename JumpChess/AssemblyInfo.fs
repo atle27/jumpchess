@@ -24,6 +24,8 @@ open System.Runtime.InteropServices
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [<assembly: Guid("a4329bad-c500-4deb-bc56-4bb7c8fb76eb")>]
 
+[<InternalsVisibleTo("JumpChessTest")>]
+
 // Version information for an assembly consists of the following four values:
 // 
 //       Major Version

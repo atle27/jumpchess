@@ -27,7 +27,7 @@ let private isValidSingleSuperJump (marbleLane:MarbleLane) (fromIndex:int) (toIn
 let rec private isValidSuperJump (marbleLane:MarbleLane) (fromIndex:int) (toIndex:int) (isInter:bool) =
     let direction = if toIndex > fromIndex then 1 else -1
     let emptyHoles = emptyHoleCount marbleLane fromIndex direction
-    let interIndex = fromIndex + (emptyHoles + 1) * 2
+    let interIndex = fromIndex + (emptyHoles + 1 * direction) * 2
     let isValidFirstLeg = isValidSingleSuperJump marbleLane fromIndex interIndex isInter
     let isValidRestLegs = interIndex = toIndex || isValidSuperJump marbleLane interIndex toIndex true
     isValidFirstLeg && isValidRestLegs

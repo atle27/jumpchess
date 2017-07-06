@@ -1,5 +1,6 @@
 ﻿module JumpChess.MarbleJump
 
+open System
 open JumpChess.Common
 open JumpChess.MarbleLane
 
@@ -9,17 +10,17 @@ let rec emptyHoleCount marbleLane laneIndex direction = // consecutive empty hol
     then 0
     else
         match marbleLane.[ajacentHole] with
-        | Empty -> 1 + emptyHoleCount marbleLane ajacentHole direction
+        | Empty -> 1 * direction + emptyHoleCount marbleLane ajacentHole direction
         | _ -> 0
 
 let rec private superJumpIndices marbleLane marbleIndex jumpDirection =
     seq {
         let beforeJumpEmptyHoleCount = emptyHoleCount marbleLane marbleIndex jumpDirection
-        let jumpOverIndex = marbleIndex + beforeJumpEmptyHoleCount + 1
+        let jumpOverIndex = marbleIndex + beforeJumpEmptyHoleCount + 1 * jumpDirection
         let endEmptyHoleCount = emptyHoleCount marbleLane jumpOverIndex jumpDirection
-        if (endEmptyHoleCount > beforeJumpEmptyHoleCount) 
+        if (Math.Abs(endEmptyHoleCount) > Math.Abs(beforeJumpEmptyHoleCount)) 
         then
-            let jumpToLocation = marbleIndex + (beforeJumpEmptyHoleCount+1) * 2
+            let jumpToLocation = marbleIndex + (beforeJumpEmptyHoleCount + 1 * jumpDirection) * 2
             yield jumpToLocation
             yield! superJumpIndices marbleLane jumpToLocation jumpDirection
         else yield! Seq.empty }

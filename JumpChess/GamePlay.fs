@@ -8,7 +8,7 @@ open JumpChess.GameBoard
 type GamePlayer = {
     color:MarbleColor
     order:int // 0..5
-    marbles:LaneCoord Set }
+    marbles:LaneCoord array }
 
 type Game = {
     board:GameBoard
@@ -17,8 +17,8 @@ type Game = {
 
 type Move = LaneCoord list
 
-let private isCircularMoveStep (moves:Move) (newMoveStep:LaneCoord) = 
-    moves |> List.exists (fun moveStep -> newMoveStep = (toAxisLaneCoord moveStep.axis moveStep))
+let private isCircularStep (moves:Move) (step:LaneCoord) = 
+    moves |> List.exists (fun moveStep -> step = (toAxisLaneCoord moveStep.axis moveStep))
     
 let private isSingleStep (fromCoord:LaneCoord) (toCoord:LaneCoord) = 
     let fromAlignedCoord = toAxisLaneCoord toCoord.axis fromCoord
@@ -33,10 +33,15 @@ let rec private movesSpan game (move:Move) =
             let jumpIndices = jumpIndices rotatedLane rotatedHole.index game.isSuperJump
             if Seq.isEmpty jumpIndices 
             then yield move
-            else for i in jumpIndices do 
+            else 
+                for i in jumpIndices do 
                     let nextMoveStep = { rotatedHole with index = i }
-                    if isCircularMoveStep move nextMoveStep || isSingleStep currentHole nextMoveStep
-                    then yield move
+                    if isCircularStep move nextMoveStep then
+                        yield move
+                    elif isSingleStep currentHole nextMoveStep then
+                        if move.Length = 1
+                        then yield nextMoveStep::move
+                        else yield move
                     else
                         let currentMove = nextMoveStep::move
                         yield! movesSpan game currentMove }

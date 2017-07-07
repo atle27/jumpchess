@@ -17,19 +17,19 @@ let buildLanes holeCounts =
 let isOutOfBounds (lane:MarbleLane) index = 
     index < 0 || index >= Array.length lane 
 
-let internal reduceMarbleLaneState (marbleLane:MarbleLane) (marbleHoleIndex, newMarbleHoleState) =
+let internal marbleLaneWithNewState (marbleLane:MarbleLane) (marbleHoleIndex, marbleHoleNewState) =
     let newMarbleLane = Array.copy marbleLane
-    Array.set newMarbleLane marbleHoleIndex newMarbleHoleState
+    Array.set newMarbleLane marbleHoleIndex marbleHoleNewState
     (newMarbleLane:MarbleLane)
 
 let removeMarble (lane:MarbleLane) index =
     match lane.[index] with
     | Empty -> failwith "Lane hole does not contain a marble!"
-    | Marble(marbleColor) -> reduceMarbleLaneState lane (index, Empty), marbleColor
+    | Marble(marbleColor) -> marbleLaneWithNewState lane (index, Empty), marbleColor
         
 let addMarble (lane:MarbleLane) marbleColor index =
     match lane.[index] with
-    | Empty -> reduceMarbleLaneState lane (index, Marble(marbleColor))
+    | Empty -> marbleLaneWithNewState lane (index, Marble(marbleColor))
     | _ -> failwith "Lane hole already contains a marble!"
    
 let moveMarble = removeMarble >>* addMarble

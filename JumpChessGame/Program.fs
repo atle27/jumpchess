@@ -53,11 +53,10 @@ let main argv =
 
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
-    let movesSpan = allMoves game marbleToMoveLaneCoord
+    let moves = allMoves game marbleToMoveLaneCoord
 
-    for move in movesSpan do
-        for moveStep in move do
-            gameBoard <- addGameMarble gameBoard White moveStep 
+    for move in moves do
+        gameBoard <- addGameMarble gameBoard White move.Head 
 
     gameBoard <- addGameMarble gameBoard Green marbleToMoveLaneCoord 
 

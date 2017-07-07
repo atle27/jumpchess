@@ -41,8 +41,6 @@ let renderGameBoard (gameBoard:GameBoard) =
 let main argv = 
     Console.SetWindowSize (55, 36)
 
-    let marbleToMoveLaneCoord = { index = 7; row = -1; rot = 0 } 
-
     let mutable gameBoard = emptyGameBoard
 
     gameBoard <- addGameMarble gameBoard Red { index = 4; row = -2; rot = 1 }
@@ -53,12 +51,12 @@ let main argv =
 
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
-    let moves = allMoves game marbleToMoveLaneCoord
+    let marbleLaneCoord = { index = 7; row = -1; rot = 0 } 
 
-    for move in moves do
+    gameBoard <- addGameMarble gameBoard Green marbleLaneCoord 
+
+    for move in (allMoves game marbleLaneCoord) do 
         gameBoard <- addGameMarble gameBoard White move.Head 
-
-    gameBoard <- addGameMarble gameBoard Green marbleToMoveLaneCoord 
 
     renderGameBoard gameBoard
 

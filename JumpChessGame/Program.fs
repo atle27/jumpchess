@@ -51,11 +51,11 @@ let main argv =
 
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
-    let marbleLaneCoord = { index = 7; row = -1; rot = 0 } 
+    let marbleToMoveCoord = { index = 7; row = -1; rot = 0 } 
 
-    gameBoard <- addGameMarble gameBoard Green marbleLaneCoord 
+    gameBoard <- addGameMarble gameBoard Green marbleToMoveCoord 
 
-    for move in (allMoves game marbleLaneCoord) do 
+    for move in (allMoves game marbleToMoveCoord) do 
         gameBoard <- addGameMarble gameBoard White move.Head 
 
     renderGameBoard gameBoard

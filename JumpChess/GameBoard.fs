@@ -137,7 +137,7 @@ let toRotatedLaneCoord rotation (coord:LaneCoord) =
 let toAxisLaneCoord axis (coord:LaneCoord) =
     toRotatedLaneCoord (axis - coord.axis) coord
 
-let (=*) (c1:LaneCoord) (c2:LaneCoord) = 
+let (=*) (c1:LaneCoord) (c2:LaneCoord) = // is equal board locations on possibly different board axes
     (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
 
 let private gameBoardWithNewLaneState (gameBoard:GameBoard) (axis:int, row:int, laneNewState:MarbleLane) =     

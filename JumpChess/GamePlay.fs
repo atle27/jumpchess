@@ -18,7 +18,9 @@ type Game = {
 type Move = LaneCoord list
 
 let (=**) (m1:Move) (m2:Move) =
-    m1.Head =* m2.Head && m1.Item(m1.Length-1) =* m2.Item(m2.Length-1)
+    let moveHeadMatches = m1.Head =* m2.Head
+    let moveTailMatches = m1.Item(m1.Length-1) =* m2.Item(m2.Length-1)
+    moveHeadMatches && moveTailMatches
 
 let private isCircularStep (moves:Move) (step:LaneCoord) = 
     moves |> List.exists (fun moveStep -> (moveStep =* step))
@@ -50,12 +52,17 @@ let rec private movesSpan game (move:Move) =
                         yield nextMoveStep::move
                         yield! movesSpan game currentMove }
           
-
-let distinctMoves (moves:seq<Move>) = 
-    let mutable distinctMoveList = List.empty<Move>
-    for move in moves do
-        if not (distinctMoveList |> List.exists (fun distinctMove -> distinctMove =** move))
-        then distinctMoveList <- move::distinctMoveList
-    distinctMoveList
-  
+let private distinctMoves (moves:seq<Move>) = 
+    let moveArray = moves |> Seq.toArray
+    let moveCount = moveArray.Length
+    seq {
+        for moveIndex in { 0 .. moveCount-1 } do
+            let lastEntry = Array.FindIndex(
+                                moveArray, 
+                                moveIndex+1, 
+                                (fun move -> move =** moveArray.[moveIndex])) = -1
+            if (lastEntry)
+            then yield moveArray.[moveIndex]
+            else yield! Seq.empty }
+   
 let allMoves game marbleHole = distinctMoves (movesSpan game [marbleHole])

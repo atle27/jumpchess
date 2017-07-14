@@ -148,15 +148,14 @@ let private gameBoardWithNewLaneState (gameBoard:GameBoard) (axis:int, row:int, 
                 else gameBoard.[a].[r] |] |] : GameBoard
 
 let private gameBoardWithNewState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, marbleHoleNewState) = 
-    let mutable newGameBoard = gameBoard
-    for axis in { 0 .. 2 } do
+    let newBoard axis (oldBoard:GameBoard) =
         let axisMarbleHolePosition = toAxisLaneCoord axis marbleHolePosition  
         let i = axisMarbleHolePosition.index
         let r = gameBoardRow axisMarbleHolePosition.row
         let a = axisMarbleHolePosition.axis
-        let newLane = marbleLaneWithNewState newGameBoard.[a].[r] (i,marbleHoleNewState)
-        newGameBoard <- gameBoardWithNewLaneState newGameBoard (a, r, newLane)
-    newGameBoard
+        let newLane = marbleLaneWithNewState oldBoard.[a].[r] (i,marbleHoleNewState)
+        gameBoardWithNewLaneState oldBoard (a, r, newLane)
+    newBoard 0 (newBoard 1 (newBoard 2 gameBoard))
       
 let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
     let i = marbleHolePosition.index

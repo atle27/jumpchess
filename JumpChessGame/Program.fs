@@ -49,11 +49,15 @@ let main argv =
     gameBoard <- addGameMarble gameBoard Red { index = 6; row = -1; rot = 2 } 
     gameBoard <- addGameMarble gameBoard Red { index = 5; row = 4; rot = 0 } 
 
-    let game = { board = gameBoard; players = []; isSuperJump = true }
-
     let marbleToMoveCoord = { index = 7; row = -1; rot = 0 } 
 
     gameBoard <- addGameMarble gameBoard Green marbleToMoveCoord 
+
+    renderGameBoard gameBoard
+
+    let game = { board = gameBoard; players = []; isSuperJump = true }
+
+    Console.ReadKey() |> ignore
 
     for move in (allMoves game marbleToMoveCoord) do 
         gameBoard <- addGameMarble gameBoard White move.Head 

@@ -41,28 +41,32 @@ let renderGameBoard (gameBoard:GameBoard) =
 let main argv = 
     Console.SetWindowSize (55, 36)
 
-    let mutable gameBoard = emptyGameBoard
-
-    gameBoard <- addGameMarble gameBoard Red { index = 4; row = -2; rot = 1 }
-    gameBoard <- addGameMarble gameBoard Red { index = 7; row = -2; rot = 1 }
-    gameBoard <- addGameMarble gameBoard Red { index = 5; row = 0; rot = 0 }
-    gameBoard <- addGameMarble gameBoard Red { index = 6; row = -1; rot = 2 } 
-    gameBoard <- addGameMarble gameBoard Red { index = 5; row = 4; rot = 0 } 
-
     let marbleToMoveCoord = { index = 7; row = -1; rot = 0 } 
 
-    gameBoard <- addGameMarble gameBoard Green marbleToMoveCoord 
+    let gameBoard = 
+        emptyGameBoard 
+        |> Board.add Red { index = 4; row = -2; rot = 1 } 
+        |> Board.add Red { index = 7; row = -2; rot = 1 }
+        |> Board.add Red { index = 5; row = 0; rot = 0 }
+        |> Board.add Red { index = 6; row = -1; rot = 2 } 
+        |> Board.add Red { index = 5; row = 4; rot = 0 } 
+        |> Board.add Green marbleToMoveCoord 
 
     renderGameBoard gameBoard
 
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
+    Console.WriteLine "Press a key to see all legal moves for green marble..."
+
     Console.ReadKey() |> ignore
 
-    for move in (allMoves game marbleToMoveCoord) do 
-        gameBoard <- addGameMarble gameBoard White move.Head 
+    let rec boardWithMoves (board:GameBoard) (moves:Move list) =
+        match moves with
+        | move::rest ->
+            boardWithMoves (board |> Board.add White move.Head) rest
+        | [] -> board
 
-    renderGameBoard gameBoard
+    renderGameBoard (boardWithMoves gameBoard (Seq.toList(allMoves game marbleToMoveCoord)))
 
     Console.ReadKey() |> ignore
 

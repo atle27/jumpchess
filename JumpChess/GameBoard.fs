@@ -27,7 +27,7 @@ let gameBoardRow row = 8 - row // converts from rows that are zero at the middle
 
 let gameBoardAxis rotation = ((rotation % 3) + 3) % 3 // converts from a rotation to one of the 3 major game board axes.
 
-[<CustomEquality; CustomComparison>]
+[<CustomEquality; NoComparison>]
 type LaneCoord = { 
     // Coordinate system for the marble lanes on the game board
     // Is used for game play.
@@ -37,19 +37,14 @@ type LaneCoord = {
     } with
     member x.axis = gameBoardAxis x.rot
     member x.angle = x.axis * 120
-    member this.laneLength = emptyGameBoard.[this.axis].[gameBoardRow this.row].Length
+    member x.laneLength = emptyGameBoard.[x.axis].[gameBoardRow x.row].Length
     override x.Equals(obj) =
         match obj with
         | :? LaneCoord as y -> x.index = y.index && x.row = y.row && x.axis = y.axis
         | _ -> false
     override x.GetHashCode() = hash (x.index, x.row, x.axis)
-    interface System.IComparable with
-        member x.CompareTo obj =
-            match obj with
-            | :? LaneCoord as y -> compare (x.index, x.row, x.axis) (y.index, y.row, y.axis)
-            | _ -> raise <| InvalidOperationException()
 
-[<CustomEquality; CustomComparison>]
+[<CustomEquality; NoComparison>]
 type internal BoardCoord = { 
     // Internal coordinate system.
     // Is used to convert between LaneCoord-s on lanes with different axes that corresponds to the same physical marble hole.
@@ -59,7 +54,7 @@ type internal BoardCoord = {
     rot:int // lane rotation in steps of 120 degrees, i.e. 2 = 240 degrees
     } with 
     member x.axis = Math.Abs(x.rot % 3)
-    member this.laneLength = emptyGameBoard.[this.axis].[gameBoardRow (this.y / BoardCoord.yUnit)].Length
+    member x.laneLength = emptyGameBoard.[x.axis].[gameBoardRow (x.y / BoardCoord.yUnit)].Length
     static member xUnit = 4
     static member yUnit = 2
     override x.Equals(obj) =
@@ -67,12 +62,7 @@ type internal BoardCoord = {
         | :? BoardCoord as y -> x.x = y.x && x.y = y.y && x.axis = y.axis
         | _ -> false
     override x.GetHashCode() = hash (x.x, x.y, x.rot)
-    interface System.IComparable with
-        member x.CompareTo obj =
-            match obj with
-            | :? BoardCoord as y -> compare (x.x, x.y, x.axis) (y.x, y.y, y.axis)
-            | _ -> raise <| InvalidOperationException()
-
+  
 let private gridOffset (x:int) isOddLaneLength = 
     // Marble lanes with even length is shifted with 1/2 a coordinate-unit in the x-direction. 
     // This is done because the marbles are not lying in a rectangular grid instead the marble hole 
@@ -137,7 +127,7 @@ let toRotatedLaneCoord rotation (coord:LaneCoord) =
 let toAxisLaneCoord axis (coord:LaneCoord) =
     toRotatedLaneCoord (axis - coord.axis) coord
 
-let (=*) (c1:LaneCoord) (c2:LaneCoord) = // is equal board locations on possibly different board axes
+let (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
     (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
 
 let private gameBoardWithNewLaneState (gameBoard:GameBoard) (axis:int, row:int, laneNewState:MarbleLane) =     
@@ -174,5 +164,9 @@ let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePos
         | _ -> failwith "Lane hole already contains a marble!"
 
 let moveGameMarble = removeGameMarble >>* addGameMarble
+
+type Board() =
+    static member add marbleColor location gameBoard = addGameMarble gameBoard marbleColor location
+    static member move source target gameBoard = moveGameMarble gameBoard source target
 
 

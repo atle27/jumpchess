@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>d0a611cd-c38d-429a-9c09-5c1ea35e91ea</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>JumpChess2</RootNamespace>
-    <AssemblyName>JumpChess2</AssemblyName>
+    <RootNamespace>JumpChess</RootNamespace>
+    <AssemblyName>JumpChess</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -56,6 +56,7 @@
     <Compile Include="MarbleJump.fs" />
     <Compile Include="GameBoard.fs" />
     <Compile Include="GamePlay.fs" />
+    <Compile Include="GameStrategy.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
   </ItemGroup>

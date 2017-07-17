@@ -11,7 +11,7 @@ open JumpChess.MarbleLane
 
 type GameBoard = MarbleLane array array // [axis,row]
 
-let buildGameBoard () = 
+let private buildGameBoard () = 
     [| for axis in {0..2} -> 
         seq { 
             yield! buildLanes({1..1..4})
@@ -21,11 +21,11 @@ let buildGameBoard () =
             yield! buildLanes({4..-1..1}) 
         } |> Seq.toArray |] : GameBoard
 
-let emptyGameBoard = buildGameBoard()
+let private emptyGameBoard : GameBoard = buildGameBoard()
 
-let gameBoardRow row = 8 - row // converts from rows that are zero at the middle of board to game board rows
+let internal gameBoardRow row = 8 - row // converts from rows that are zero at the middle of board to game board rows
 
-let gameBoardAxis rotation = ((rotation % 3) + 3) % 3 // converts from a rotation to one of the 3 major game board axes.
+let internal gameBoardAxis rotation = ((rotation % 3) + 3) % 3 // converts from a rotation to one of the 3 major game board axes.
 
 [<CustomEquality; NoComparison>]
 type LaneCoord = { 
@@ -121,14 +121,11 @@ let private toRotatedCoord rotation (coord:BoardCoord) =
     let x2,y2 = yCoordTransform
     { x = x1+x2; y = y1+y2; rot = coord.rot+rot }
 
-let toRotatedLaneCoord rotation (coord:LaneCoord) =
+let internal toRotatedLaneCoord rotation (coord:LaneCoord) =
     (toBoardCoord >> toRotatedCoord rotation >> toLaneCoord) coord
 
-let toAxisLaneCoord axis (coord:LaneCoord) =
+let internal toAxisLaneCoord axis (coord:LaneCoord) =
     toRotatedLaneCoord (axis - coord.axis) coord
-
-let (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
-    (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
 
 let private gameBoardWithNewLaneState (gameBoard:GameBoard) (axis:int, row:int, laneNewState:MarbleLane) =     
     [| for a in { 0 .. 2 } ->
@@ -147,7 +144,7 @@ let private gameBoardWithNewState (gameBoard:GameBoard) (marbleHolePosition:Lane
         gameBoardWithNewLaneState oldBoard (a, r, newLane)
     newBoard 0 (newBoard 1 (newBoard 2 gameBoard))
       
-let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
+let internal removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
     let i = marbleHolePosition.index
     let r = gameBoardRow marbleHolePosition.row
     let a = marbleHolePosition.axis
@@ -155,7 +152,7 @@ let removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
         | Empty -> failwith "Lane hole does not contain a marble!"
         | Marble(marbleColor) -> (gameBoardWithNewState gameBoard (marbleHolePosition,Empty)), marbleColor
        
-let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) =
+let internal addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) =
     let i = marbleHolePosition.index
     let r = gameBoardRow marbleHolePosition.row
     let a = marbleHolePosition.axis
@@ -163,10 +160,30 @@ let addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePos
         | Empty -> gameBoardWithNewState gameBoard (marbleHolePosition, Marble(marbleColor))
         | _ -> failwith "Lane hole already contains a marble!"
 
-let moveGameMarble = removeGameMarble >>* addGameMarble
+let internal moveGameMarble = removeGameMarble >>* addGameMarble
+
+type AddMarble = MarbleColor -> LaneCoord -> GameBoard -> GameBoard
+type MoveMarble = LaneCoord -> LaneCoord -> GameBoard -> GameBoard
 
 type Board() =
-    static member add marbleColor location gameBoard = addGameMarble gameBoard marbleColor location
-    static member move source target gameBoard = moveGameMarble gameBoard source target
+    static member create : GameBoard = 
+        buildGameBoard()
+    static member add : AddMarble = 
+        fun marbleColor marbleCoord gameBoard -> addGameMarble gameBoard marbleColor marbleCoord
+    static member move : MoveMarble = 
+        fun fromCoord toCoord gameBoard -> moveGameMarble gameBoard fromCoord toCoord
+
+type ConvertCoordToAxis = int -> LaneCoord -> LaneCoord
+type ConvertCoordToRotation = int -> LaneCoord -> LaneCoord
+
+type Coord() =
+    static member toAxis : ConvertCoordToAxis = 
+        fun coord -> toAxisLaneCoord coord
+    static member rotate : ConvertCoordToRotation = 
+        fun coord -> toRotatedLaneCoord coord
+
+let (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
+    (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
+
 
 

@@ -3,6 +3,7 @@ open JumpChess.Common
 open JumpChess.MarbleLane
 open JumpChess.GameBoard
 open JumpChess.GamePlay
+open JumpChess.GameStrategy
 
 let renderMarbleHole (marbleHole:MarbleHole) =
     let marbleConsoleColor = 
@@ -44,7 +45,7 @@ let main argv =
     let marbleToMoveCoord = { index = 7; row = -1; rot = 0 } 
 
     let gameBoard = 
-        emptyGameBoard 
+        Board.create 
         |> Board.add Red { index = 4; row = -2; rot = 1 } 
         |> Board.add Red { index = 7; row = -2; rot = 1 }
         |> Board.add Red { index = 5; row = 0; rot = 0 }
@@ -66,7 +67,7 @@ let main argv =
             boardWithMoves (board |> Board.add White move.Head) rest
         | [] -> board
 
-    renderGameBoard (boardWithMoves gameBoard (Seq.toList(allMoves game marbleToMoveCoord)))
+    renderGameBoard (boardWithMoves gameBoard (Seq.toList(Strategy.allMoves game marbleToMoveCoord)))
 
     Console.ReadKey() |> ignore
 

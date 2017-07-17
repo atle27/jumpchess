@@ -29,7 +29,7 @@ let private isSingleStep (fromCoord:LaneCoord) (toCoord:LaneCoord) =
     let fromAlignedCoord = toAxisLaneCoord toCoord.axis fromCoord
     toCoord.row = fromAlignedCoord.row && Math.Abs(toCoord.index - fromAlignedCoord.index) = 1
 
-let rec private movesSpan game (move:Move) =
+let rec private movesSpan (game:Game) (move:Move) =
     let currentHole = move.Head 
     seq {
         for axis in 0..2 do
@@ -65,4 +65,4 @@ let private distinctMoves (moves:seq<Move>) =
             then yield moveArray.[moveIndex]
             else yield! Seq.empty }
    
-let allMoves game marbleHole = distinctMoves (movesSpan game [marbleHole])
+let internal allMoves game marbleHole = distinctMoves (movesSpan game [marbleHole])

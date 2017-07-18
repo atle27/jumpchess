@@ -173,8 +173,8 @@ let internal marbleCoord (laneCoord:LaneCoord) =
     (laneCoord.axis, laneCoord.row, laneCoord.index)
 
 type Board() =
-    static member create : GameBoard = 
-        buildGameBoard()
+    static member create : unit -> GameBoard = 
+        fun () -> buildGameBoard()
     static member add : AddMarble = 
         fun marbleColor marbleCoord gameBoard -> addGameMarble gameBoard marbleColor (laneCoord marbleCoord)
     static member move : MoveMarble = 

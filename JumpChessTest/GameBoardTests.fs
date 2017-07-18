@@ -10,7 +10,7 @@ open JumpChessTest.Common
 
 [<Fact>]
 let ``Any of the game board lanes have the same length as the lanes one the real physical board`` () =
-    let emptyGameBoard = Board.create
+    let emptyGameBoard = Board.create()
     Assert.True(emptyGameBoard.[2].[8].Length = 9)
     Assert.True(emptyGameBoard.[1].[2].Length = 3)
     Assert.True(emptyGameBoard.[0].[5].Length = 12)
@@ -63,7 +63,7 @@ let ``When converting between lane and board coordinates the rotation does not c
 
 [<Property>]
 let ``When converting back and forth between lane coord. and board coord. we should arrive at the initial location`` () =
-    let emptyGameBoard = Board.create
+    let emptyGameBoard = Board.create()
     Prop.forAll boardAxisRange <| fun axis ->
         Prop.forAll boardRowRange <| fun row ->
             let lane = emptyGameBoard.[axis].[gameBoardRow row]
@@ -74,7 +74,7 @@ let ``When converting back and forth between lane coord. and board coord. we sho
 
 [<Property>]
 let ``When converting rotated lane coord. stepwise in a full circle we should arrive at the initial location`` () =
-    let emptyGameBoard = Board.create
+    let emptyGameBoard = Board.create()
     Prop.forAll boardAxisRange <| fun axis ->
         Prop.forAll boardRowRange <| fun row ->
             let lane = emptyGameBoard.[axis].[gameBoardRow row]

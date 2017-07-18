@@ -1,19 +1,50 @@
 ﻿module JumpChess.GamePlay
 
 open System
+open JumpChess.Common
 open JumpChess.MarbleLane
 open JumpChess.MarbleJump
 open JumpChess.GameBoard
 
 type Player = {
+    id:string
     color:MarbleColor
-    order:int // 0..5
     marbles:MarbleCoord array }
+
+let playOrder marbleColor = 
+    match marbleColor with
+    | Black -> 1 | White -> 2 | Red -> 3 | Blue -> 4 | Green -> 5 | Yellow -> 6
 
 type Game = {
     board:GameBoard
     players:Player list
-    isSuperJump:bool }
+    isSuperJump:bool } with
+    static member create : bool -> (string*MarbleColor) list -> Game = 
+        fun isSuperJump gamePlayers -> 
+            let players = 
+                gamePlayers 
+                |> List.map (fun (id,color) -> 
+                    let order = (playOrder color) - 1
+                    let sign = if (isOdd order) then -1 else 1
+                    let axis = order / 2
+                    let marbles = [| 
+                        for row in {8*sign..(-1*sign)..5*sign} do 
+                            for index in {0..8-row*sign} -> 
+                                (axis,row,index:MarbleCoord) |]
+                    { id=id; color=color; marbles=marbles})
+            let marbles = 
+                players 
+                |> List.collect (fun player -> 
+                    player.marbles 
+                    |> Array.toList 
+                    |> List.map (fun marble -> player.color,marble))
+            let rec loadBoard marbles board =
+                match marbles with
+                | (marbleColor,marbleCoord)::rest -> 
+                    loadBoard rest (board |> Board.add marbleColor marbleCoord)
+                | [] -> board
+            let board = Board.create() |> loadBoard marbles
+            { board = board; players=players; isSuperJump=isSuperJump }
 
 type internal Jump = LaneCoord list
 

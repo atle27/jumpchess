@@ -5,11 +5,17 @@ open JumpChess.Common
 open JumpChess.MarbleLane
 
 // The game board has 3 axes with angles of 0 degrees, 120 degrees, and 240 degree.
-// A board is represented as an array of marble lanes covering it along each axis.
-// Hence each physical hole on the board belongs to 3 marble lanes, one along each axis.
-// And hence a marble will always be located on 3 marble lanes, one along each axis.
+// A board is represented as an array of marble lanes(rows) covering it along each axis.
+// Hence each physical hole on the board belongs to 3 marble lanes(rows), one along each axis.
+// And hence a marble will always be located on 3 marble lanes(rows), one along each axis.
 
-type GameBoard = MarbleLane array array // [axis,row]
+type GameBoard = MarbleLane array array // [axis (0..2), row (0..16)]
+
+type MarbleCoord = int * int * int // axis (0..2), row (-8..8), index (0..lanelength-1)
+
+type AddMarble = MarbleColor -> MarbleCoord -> GameBoard -> GameBoard
+
+type MoveMarble = MarbleCoord -> MarbleCoord -> GameBoard -> GameBoard
 
 let private buildGameBoard () = 
     [| for axis in {0..2} -> 
@@ -28,9 +34,9 @@ let internal gameBoardRow row = 8 - row // converts from rows that are zero at t
 let internal gameBoardAxis rotation = ((rotation % 3) + 3) % 3 // converts from a rotation to one of the 3 major game board axes.
 
 [<CustomEquality; NoComparison>]
-type LaneCoord = { 
+type internal LaneCoord = { 
     // Coordinate system for the marble lanes on the game board
-    // Is used for game play.
+    // Is used for calculating strategy and game play.
     index:int // lane index (value 0..(lanelength-1))
     row:int // lane row (value 0 at the center of the board)
     rot:int // lane rotation (in steps of 120 degrees, i.e. 2 = 240 degrees)
@@ -38,6 +44,7 @@ type LaneCoord = {
     member x.axis = gameBoardAxis x.rot
     member x.angle = x.axis * 120
     member x.laneLength = emptyGameBoard.[x.axis].[gameBoardRow x.row].Length
+    member x.marbleCoord = x.axis, x.row, x.index
     override x.Equals(obj) =
         match obj with
         | :? LaneCoord as y -> x.index = y.index && x.row = y.row && x.axis = y.axis
@@ -136,54 +143,45 @@ let private gameBoardWithNewLaneState (gameBoard:GameBoard) (axis:int, row:int, 
 
 let private gameBoardWithNewState (gameBoard:GameBoard) (marbleHolePosition:LaneCoord, marbleHoleNewState) = 
     let newBoard axis (oldBoard:GameBoard) =
-        let axisMarbleHolePosition = toAxisLaneCoord axis marbleHolePosition  
-        let i = axisMarbleHolePosition.index
-        let r = gameBoardRow axisMarbleHolePosition.row
-        let a = axisMarbleHolePosition.axis
-        let newLane = marbleLaneWithNewState oldBoard.[a].[r] (i,marbleHoleNewState)
-        gameBoardWithNewLaneState oldBoard (a, r, newLane)
+        let (a,r,i) = (toAxisLaneCoord axis marbleHolePosition).marbleCoord  
+        let newLane = marbleLaneWithNewState oldBoard.[a].[gameBoardRow r] (i,marbleHoleNewState)
+        gameBoardWithNewLaneState oldBoard (a, gameBoardRow r, newLane)
     newBoard 0 (newBoard 1 (newBoard 2 gameBoard))
       
 let internal removeGameMarble (gameBoard:GameBoard) (marbleHolePosition:LaneCoord) =
-    let i = marbleHolePosition.index
-    let r = gameBoardRow marbleHolePosition.row
-    let a = marbleHolePosition.axis
-    match gameBoard.[a].[r].[i] with
+    let (a,r,i) = marbleHolePosition.marbleCoord
+    match gameBoard.[a].[gameBoardRow r].[i] with
         | Empty -> failwith "Lane hole does not contain a marble!"
         | Marble(marbleColor) -> (gameBoardWithNewState gameBoard (marbleHolePosition,Empty)), marbleColor
        
 let internal addGameMarble (gameBoard:GameBoard) (marbleColor:MarbleColor) (marbleHolePosition:LaneCoord) =
-    let i = marbleHolePosition.index
-    let r = gameBoardRow marbleHolePosition.row
-    let a = marbleHolePosition.axis
-    match gameBoard.[a].[r].[i] with
+    let (a,r,i) = marbleHolePosition.marbleCoord
+    match gameBoard.[a].[gameBoardRow r].[i] with
         | Empty -> gameBoardWithNewState gameBoard (marbleHolePosition, Marble(marbleColor))
         | _ -> failwith "Lane hole already contains a marble!"
 
 let internal moveGameMarble = removeGameMarble >>* addGameMarble
 
-type AddMarble = MarbleColor -> LaneCoord -> GameBoard -> GameBoard
-type MoveMarble = LaneCoord -> LaneCoord -> GameBoard -> GameBoard
+let internal (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
+    (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
+
+let internal laneCoord (marbleCoord:MarbleCoord) = 
+    let (axis, row, index) = marbleCoord
+    { index = index; row = row; rot = axis}
+
+let internal marbleCoord (laneCoord:LaneCoord) =
+    (laneCoord.axis, laneCoord.row, laneCoord.index)
 
 type Board() =
     static member create : GameBoard = 
         buildGameBoard()
     static member add : AddMarble = 
-        fun marbleColor marbleCoord gameBoard -> addGameMarble gameBoard marbleColor marbleCoord
+        fun marbleColor marbleCoord gameBoard -> addGameMarble gameBoard marbleColor (laneCoord marbleCoord)
     static member move : MoveMarble = 
-        fun fromCoord toCoord gameBoard -> moveGameMarble gameBoard fromCoord toCoord
+        fun fromCoord toCoord gameBoard -> moveGameMarble gameBoard (laneCoord fromCoord) (laneCoord toCoord)
 
-type ConvertCoordToAxis = int -> LaneCoord -> LaneCoord
-type ConvertCoordToRotation = int -> LaneCoord -> LaneCoord
 
-type Coord() =
-    static member toAxis : ConvertCoordToAxis = 
-        fun coord -> toAxisLaneCoord coord
-    static member rotate : ConvertCoordToRotation = 
-        fun coord -> toRotatedLaneCoord coord
 
-let (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
-    (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
 
 
 

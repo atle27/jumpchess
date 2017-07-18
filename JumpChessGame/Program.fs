@@ -8,20 +8,20 @@ open JumpChess.GameRender
 
 [<EntryPoint>]
 let main argv = 
-    Console.SetWindowSize (55, 36)
+    Console.SetWindowSize (55,36)
 
-    let greenMarbleCoord = { index = 7; row = -1; rot = 0 } 
+    let greenMarbleCoord = (0,-1,7)
 
     let gameBoard = 
         Board.create 
-        |> Board.add Red { index = 4; row = -2; rot = 1 } 
-        |> Board.add Red { index = 7; row = -2; rot = 1 }
-        |> Board.add Red { index = 5; row = 0; rot = 0 }
-        |> Board.add Red { index = 6; row = -1; rot = 2 } 
-        |> Board.add Red { index = 5; row = 4; rot = 0 } 
+        |> Board.add Red (1,-2,4)
+        |> Board.add Red (1,-2,7)
+        |> Board.add Red (0,0,5)
+        |> Board.add Red (2,-1,6) 
+        |> Board.add Red (0,4,5)
         |> Board.add Green greenMarbleCoord 
 
-    Render.drawConsole <| gameBoard
+    Render.consoleDraw <| gameBoard
 
     Console.WriteLine "Press a key to see all legal moves for green marble..."
 
@@ -29,15 +29,14 @@ let main argv =
    
     let game = { board = gameBoard; players = []; isSuperJump = true }
 
-    let allMovesGreenMarble = Strategy.allMoves game greenMarbleCoord |> Seq.toList
+    let legalMovesGreenMarble = Strategy.legalMoves game greenMarbleCoord |> Seq.toList
 
-    let rec addMarblesForMovesToBoard (board:GameBoard) (moves:Move list) =
-        match moves with
-        | move::rest ->
-            addMarblesForMovesToBoard (board |> Board.add White move.Head) rest
-        | [] -> board
+    let rec addMovesToBoard (marbleCoords:MarbleCoord list) gameBoard =
+        match marbleCoords with
+        | marbleCoord::tail -> addMovesToBoard tail (Board.add White marbleCoord gameBoard) 
+        | [] -> gameBoard
 
-    Render.drawConsole <| (addMarblesForMovesToBoard gameBoard allMovesGreenMarble)
+    Render.consoleDraw <| addMovesToBoard legalMovesGreenMarble gameBoard 
 
     Console.ReadKey() |> ignore
 

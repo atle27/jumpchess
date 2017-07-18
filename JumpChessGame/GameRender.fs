@@ -39,5 +39,6 @@ let private renderGameBoard (gameBoard:GameBoard) =
         Console.Write "\n \n"
 
 type Render() =
-    static member drawConsole : (GameBoard -> unit) = fun board -> renderGameBoard board
+    static member consoleDraw : GameBoard -> unit = 
+        fun board -> renderGameBoard board
         

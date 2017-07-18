@@ -4,7 +4,9 @@ open JumpChess.GameBoard
 open JumpChess.GamePlay
 
 type Strategy() =
-    static member allMoves : (Game -> LaneCoord -> Move seq) = 
-        fun game marble -> allMoves game marble
-    static member bestMove : (Game -> LaneCoord -> Move) = // to be changes to simple strategy of longest distance move 
-        fun game marble -> Seq.toArray(Strategy.allMoves game marble).[0]
+    static member legalMoves : Game -> MarbleCoord -> MarbleCoord seq = 
+        fun game marblePosition -> 
+            allLegalMoves game (laneCoord marblePosition) |> Seq.map (fun move -> marbleCoord move)
+    static member bestMove : Game -> MarbleCoord -> MarbleCoord = 
+        // to be changed to simple strategy of longest distance move...
+        fun game marble -> Seq.toArray(Strategy.legalMoves game marble).[0]

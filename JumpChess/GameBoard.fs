@@ -13,10 +13,6 @@ type GameBoard = MarbleLane array array // [axis (0..2), row (0..16)]
 
 type MarbleCoord = int * int * int // axis (0..2), row (-8..8), index (0..lanelength-1)
 
-type AddMarble = MarbleColor -> MarbleCoord -> GameBoard -> GameBoard
-
-type MoveMarble = MarbleCoord -> MarbleCoord -> GameBoard -> GameBoard
-
 let private buildGameBoard () = 
     [| for axis in {0..2} -> 
         seq { 
@@ -175,9 +171,9 @@ let internal marbleCoord (laneCoord:LaneCoord) =
 type Board() =
     static member create : unit -> GameBoard = 
         fun () -> buildGameBoard()
-    static member add : AddMarble = 
+    static member add : MarbleColor -> MarbleCoord -> GameBoard -> GameBoard = 
         fun marbleColor marbleCoord gameBoard -> addGameMarble gameBoard marbleColor (laneCoord marbleCoord)
-    static member move : MoveMarble = 
+    static member move : MarbleCoord -> MarbleCoord -> GameBoard -> GameBoard = 
         fun fromCoord toCoord gameBoard -> moveGameMarble gameBoard (laneCoord fromCoord) (laneCoord toCoord)
 
 

@@ -25,8 +25,8 @@ type Game = {
                 gamePlayers 
                 |> List.map (fun (id,color) -> 
                     let order = (playOrder color) - 1
-                    let sign = if (isOdd order) then -1 else 1
-                    let axis = order / 2
+                    let sign = 1 - 2 * (order % 2)
+                    let axis = order % 3
                     let marbles = [| 
                         for row in {8*sign..(-1*sign)..5*sign} do 
                             for index in {0..8-row*sign} -> 

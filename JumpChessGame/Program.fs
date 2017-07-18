@@ -12,7 +12,7 @@ let main argv =
 
     let isSuperJumpGame = true
 
-    let players = ["Atle",Blue;"Xuemei",Red;"Sophie",Green;"Tommie",White;"Alf",Black;"Kirsten",Yellow]
+    let players = ["A",Blue;"B",Red;"C",Green;"D",White;"E",Black;"F",Yellow]
 
     let newGame = Game.create isSuperJumpGame players
 

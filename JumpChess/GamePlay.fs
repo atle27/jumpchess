@@ -9,7 +9,8 @@ open JumpChess.GameBoard
 type Player = {
     id:string
     color:MarbleColor
-    marbles:MarbleCoord array }
+    goalCoord: MarbleCoord
+    marbleCoords:MarbleCoord array }
 
 let playOrder marbleColor = 
     match marbleColor with
@@ -30,12 +31,12 @@ type Game = {
                     let marbles = [| 
                         for row in {8*sign..(-1*sign)..5*sign} do 
                             for index in {0..8-row*sign} -> 
-                                (axis,row,index:MarbleCoord) |]
-                    { id=id; color=color; marbles=marbles})
+                                axis,row,index |]
+                    { id=id; color=color; marbleCoords=marbles; goalCoord=(axis,-8*sign,0) })
             let marbles = 
                 players 
                 |> List.collect (fun player -> 
-                    player.marbles 
+                    player.marbleCoords 
                     |> Array.toList 
                     |> List.map (fun marble -> player.color,marble))
             let rec loadBoard marbles board =

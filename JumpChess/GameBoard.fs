@@ -168,6 +168,9 @@ let internal laneCoord (marbleCoord:MarbleCoord) =
 let internal marbleCoord (laneCoord:LaneCoord) =
     (laneCoord.axis, laneCoord.row, laneCoord.index)
 
+let distance (fromCoord:MarbleCoord) (toCoord:MarbleCoord) =
+    0.0
+
 type Board() =
     static member create : unit -> GameBoard = 
         fun () -> buildGameBoard()

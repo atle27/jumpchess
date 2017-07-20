@@ -15,11 +15,11 @@ type Strategy() =
             let closestToGoal =
                 allMoves
                 |> Seq.map (fun marbleCoord ->
-                    marbleCoord, (distance marbleCoord player.goalCoord))
+                    marbleCoord, (distance marbleCoord (goalCoord player.color)))
                 |> Seq.reduce (fun (mc1,md1) (mc2, md2) ->
                     if md1 > md2
                     then (mc1,md1)
-                    else (mc2, md2))
+                    else (mc2,md2))
             let (bestMoveCoord,_) = closestToGoal
             bestMoveCoord
             

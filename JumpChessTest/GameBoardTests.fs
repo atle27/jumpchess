@@ -50,6 +50,21 @@ let ``Verify correct conversion for rotated lane coord (test 2)`` () =
     let expectedLaneCord = { index = 9; row = -2; rot = 2 }
     Assert.Equal(actualLaneCoord, expectedLaneCord)
 
+[<Fact>]
+let ``Verify correct distance calculation (test 1)`` () =
+    let actualDistance = distance (0,0,0) (0,0,1)
+    Assert.True(Math.Abs(actualDistance - 1.0) < 0.0001)
+
+[<Fact>]
+let ``Verify correct distance calculation (test 2)`` () =
+    let actualDistance = distance (0,0,0) (0,1,2)
+    Assert.True(Math.Abs(actualDistance - 1.7320508) < 0.0001)
+
+[<Fact>]
+let ``Verify correct distance calculation (test 3)`` () =
+    let actualDistance = distance (0,0,0) (0,2,2)
+    Assert.True(Math.Abs(actualDistance - 2.0) < 0.0001)
+
 let boardAxisRange = Gen.elements [0..2] |> Arb.fromGen
 let boardRowRange = Gen.elements [-8..8] |> Arb.fromGen
 

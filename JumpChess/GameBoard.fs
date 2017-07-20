@@ -169,7 +169,11 @@ let internal marbleCoord (laneCoord:LaneCoord) =
     (laneCoord.axis, laneCoord.row, laneCoord.index)
 
 let distance (fromCoord:MarbleCoord) (toCoord:MarbleCoord) =
-    0.0
+    let c1 = toBoardCoord (toAxisLaneCoord 0 (laneCoord fromCoord))
+    let c2 = toBoardCoord (toAxisLaneCoord 0 (laneCoord toCoord))
+    let x = 0.5 * ((float)(Math.Abs(c1.x - c2.x))) / ((float)BoardCoord.xUnit) 
+    let y = Math.Tan(Math.PI/3.0) * 0.5 * ((float)(Math.Abs(c1.y - c2.y))) / ((float)BoardCoord.yUnit) 
+    Math.Sqrt(x*x + y*y)
 
 type Board() =
     static member create : unit -> GameBoard = 

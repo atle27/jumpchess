@@ -12,14 +12,24 @@ type Player = {
     marbleCoords:MarbleCoord array }
 
 let playOrder marbleColor = 
-    match marbleColor with
-    | Black -> 1 | White -> 2 | Red -> 3 | Blue -> 4 | Green -> 5 | Yellow -> 6
+    1 + Array.IndexOf(marbleColors,marbleColor)
+
+let oppositeColor marbleColor = 
+    marbleColors.[(((playOrder marbleColor) - 1) + 3) % 6]
 
 let goalCoord marbleColor =
     let order = (playOrder marbleColor) - 1
     let sign = 1 - 2 * (order % 2)
     let axis = order % 3
     (axis,-8*sign,0):MarbleCoord   
+
+let startCoords marbleColor =
+    let order = (playOrder marbleColor) - 1
+    let sign = 1 - 2 * (order % 2)
+    let axis = order % 3
+    [| for row in {8*sign..(-1*sign)..5*sign} do 
+        for index in {0..8-row*sign} -> 
+            axis,row,index |]
 
 type Game = {
     board:GameBoard
@@ -30,14 +40,7 @@ type Game = {
             let players = 
                 gamePlayers 
                 |> List.map (fun (id,color) -> 
-                    let order = (playOrder color) - 1
-                    let sign = 1 - 2 * (order % 2)
-                    let axis = order % 3
-                    let marbles = [| 
-                        for row in {8*sign..(-1*sign)..5*sign} do 
-                            for index in {0..8-row*sign} -> 
-                                axis,row,index |]
-                    { id=id; color=color; marbleCoords=marbles })
+                    { id=id; color=color; marbleCoords=(startCoords color) })
             let marbles = 
                 players 
                 |> List.collect (fun player -> 

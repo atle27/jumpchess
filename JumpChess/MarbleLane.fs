@@ -8,6 +8,8 @@ type MarbleHole = | Empty | Marble of MarbleColor
 
 type MarbleLane = MarbleHole array
 
+let marbleColors = [| Black; White; Red; Blue; Green; Yellow |]
+
 let internal buildLane holeCount = 
     Array.create holeCount Empty : MarbleLane
 

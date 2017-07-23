@@ -58,7 +58,7 @@ let ``Verify correct distance calculation (test 1)`` () =
 [<Fact>]
 let ``Verify correct distance calculation (test 2)`` () =
     let actualDistance = distance (0,0,0) (0,1,2)
-    Assert.True(Math.Abs(actualDistance - 1.7320508) < 0.0001)
+    Assert.True(Math.Abs(actualDistance - 2.0 * yUnitDistance) < 0.0001)
 
 [<Fact>]
 let ``Verify correct distance calculation (test 3)`` () =

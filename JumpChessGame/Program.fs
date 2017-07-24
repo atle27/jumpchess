@@ -24,7 +24,7 @@ let main argv =
 
     let greenMarbleCoord = (0,-1,7)
 
-    let testBoard = 
+    let board = 
         Board.create () 
         |> Board.add Red (1,-2,4)
         |> Board.add Red (1,-2,7)
@@ -33,22 +33,30 @@ let main argv =
         |> Board.add Red (0,4,5)
         |> Board.add Green greenMarbleCoord 
 
-    Render.consoleDraw <| testBoard
+    Render.consoleDraw <| board
 
     Console.WriteLine "Press a key to see all legal moves for green marble..."
 
     Console.ReadKey() |> ignore
    
-    let testGame = { board = testBoard; players = []; isSuperJump = isSuperJumpGame }
+    let player = { id = "Atle"; color = Green; marbleCoords= [| greenMarbleCoord |] }
 
-    let legalMovesGreenMarble = Strategy.legalMoves testGame greenMarbleCoord |> Seq.toList
+    let game = { board = board; players = [ player ]; isSuperJump = isSuperJumpGame }
+
+    let legalMovesGreenMarble = Strategy.legalMoves game greenMarbleCoord |> Seq.toList
 
     let rec addMovesToBoard (marbleCoords:MarbleCoord list) gameBoard =
         match marbleCoords with
         | marbleCoord::tail -> addMovesToBoard tail (Board.add White marbleCoord gameBoard) 
         | [] -> gameBoard
 
-    Render.consoleDraw <| addMovesToBoard legalMovesGreenMarble testBoard 
+    Render.consoleDraw <| addMovesToBoard legalMovesGreenMarble board 
+
+    Console.WriteLine "Press a key to see the best move for green marble..."
+
+    Console.ReadKey() |> ignore
+   
+    Render.consoleDraw <| (board |> (Strategy.bestMove >>* Board.move) game player)
 
     Console.WriteLine "Press a key exit..."
 

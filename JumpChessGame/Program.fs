@@ -83,6 +83,8 @@ let main argv =
 
     Console.WriteLine "Press a key to step through game between six AI players..."
 
+    Console.ReadKey() |> ignore
+
     let allPlayerGame = Game.create true ["A";"B";"C";"D";"E";"F"]
     let playerCount = allPlayerGame.players.Length
 

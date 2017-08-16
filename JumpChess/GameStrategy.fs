@@ -25,7 +25,7 @@ type Strategy() =
                 invalidCoords |> Seq.exists (fun c -> c = coord)
             allMoves |> Seq.filter (fun coord -> not(isInvalidCoord coord))
 
-    static member bestMove : StrategyBestMove = 
+    static member bestMove : StrategyMove = 
         fun game player -> 
             let allJumps = // a sequence of the valid moves for the players marbles
                 player.marbleCoords 

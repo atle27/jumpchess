@@ -97,21 +97,21 @@ type Game = {
                 | [] -> board
             let board = Board.create() |> loadBoard marbles
             { board = board; players=players; isSuperJump=isSuperJump }
-    static member doBestMove : StrategyBestMove -> Game -> int -> Game =
-        fun (bestMove:StrategyBestMove) (game:Game) (turn:int) ->
+    static member doStrategyMove : StrategyMove -> Game -> int -> Game =
+        fun (strategyMove:StrategyMove) (game:Game) (turn:int) ->
             let mutable player = game.players.[turn]
-            let playerBoardMove moveFrom moveTo =
+            let doPlayerBoardMove moveFrom moveTo =
                 player <- { 
                     id = player.id; 
                     color = player.color; 
                     lastMove = Some(moveFrom, moveTo);
                     marbleCoords = player.marbleCoords |> Array.map (fun c -> if c = moveFrom then moveTo else c) }
                 Board.move moveFrom moveTo
-            let doBoardMove = (bestMove >>* playerBoardMove) game player
+            let doBoardMove = (strategyMove >>* doPlayerBoardMove) game player
             { board = game.board |> doBoardMove
               players = game.players |> List.map (fun p -> if p.id = player.id then player else p)
               isSuperJump = game.isSuperJump }
-and StrategyBestMove = Game -> Player -> MarbleCoord * MarbleCoord
+and StrategyMove = Game -> Player -> MarbleCoord * MarbleCoord
 
 type internal Jump = LaneCoord list
 

@@ -1,10 +1,28 @@
 ﻿module JumpChess.MarbleLane
 
 open JumpChess.Common
+open Chiron
 
-type MarbleColor = | Black | White | Red | Blue | Green | Yellow 
+type MarbleColor = | Black | White | Red | Blue | Green | Yellow with
+    member x.toString = toString x
+    static member fromString s = fromString<MarbleColor> s
 
-type MarbleHole = | Empty | Marble of MarbleColor
+type MarbleHole = | Empty | Marble of MarbleColor with
+    static member ToJson (marbleHole : MarbleHole) =
+        match marbleHole with
+        | Empty -> ToJsonDefaults.ToJson "Empty"
+        | Marble(color) -> ToJsonDefaults.ToJson color.toString
+    static member FromJson (_ : MarbleHole) : Json<MarbleHole> =
+        fun json ->
+            match json with
+            | String "Empty" -> Value Empty, json
+            | String "Black" -> Value (Marble(Black)), json
+            | String "White" -> Value (Marble(White)), json
+            | String "Red" -> Value (Marble(Red)), json
+            | String "Blue" -> Value (Marble(Blue)), json
+            | String "Green" -> Value (Marble(Green)), json
+            | String "Yellow" -> Value (Marble(Yellow)), json
+            | s -> Error (sprintf "Expected MarbleHole, found %A" s), json
 
 type MarbleLane = MarbleHole array
 

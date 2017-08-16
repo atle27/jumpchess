@@ -5,11 +5,26 @@ open JumpChess.Common
 open JumpChess.MarbleLane
 open JumpChess.MarbleJump
 open JumpChess.GameBoard
+open Chiron
+open Chiron.Operators
 
 type Player = {
     id:string
     color:MarbleColor
-    marbleCoords:MarbleCoord array }
+    lastMove:((MarbleCoord*MarbleCoord) option)
+    marbleCoords:MarbleCoord array } with 
+    static member ToJson (x:Player) =
+           Json.write "id" x.id
+        *> Json.write "color" x.color.toString
+        *> Json.write "lastMove" x.lastMove
+        *> Json.write "marbleCoords" x.marbleCoords
+    static member FromJson (_:Player) =
+        json {
+            let! id = Json.read "id"
+            let! color = Json.read "color" 
+            let! lastMove = Json.read "lastMove" 
+            let! marbleCoords = Json.read "marbleCoords"
+            return { id = id; color = MarbleColor.fromString(color); lastMove = lastMove; marbleCoords = marbleCoords } }
 
 let playOrder marbleColor = 
     1 + Array.IndexOf(marbleColors,marbleColor)
@@ -31,16 +46,44 @@ let startCoords marbleColor =
         for index in {0..8-row*sign} -> 
             axis,row,index |]
 
+
 type Game = {
     board:GameBoard
     players:Player list
     isSuperJump:bool } with
-    static member create : bool -> (string*MarbleColor) list -> Game = 
-        fun isSuperJump gamePlayers -> 
+    static member ToJson (x:Game) =
+           Json.write "board" x.board
+        *> Json.write "players" x.players
+        *> Json.write "isSuperJump" x.isSuperJump
+    static member FromJson (_:Game) =
+        json {
+            let! board = Json.read "board"
+            let! players = Json.read "players" 
+            let! isSuperJump = Json.read "isSuperJump"
+            return { board = board; players = players; isSuperJump = isSuperJump } }
+    static member serialize : Game -> string =
+        fun game ->
+            game
+            |> Json.serialize
+            |> Json.formatWith JsonFormattingOptions.SingleLine
+    static member deserialize : string -> Game =
+        fun string ->
+            string
+            |> Json.parse
+            |> Json.deserialize
+    static member create : bool -> string list -> Game = 
+        fun isSuperJump playersIds -> 
+            let colors = 
+                match  playersIds.Length with
+                | 2 -> marbleColors.[0]::marbleColors.[3]::[]
+                | 4 -> marbleColors.[0]::marbleColors.[1]::marbleColors.[3]::marbleColors.[4]::[]
+                | 6 -> Array.toList marbleColors
+                | _ -> failwith "Invalid number of players"
+            let gamePlayers = List.zip playersIds colors
             let players = 
                 gamePlayers 
                 |> List.map (fun (id,color) -> 
-                    { id=id; color=color; marbleCoords=(startCoords color) })
+                    { id=id; color=color; lastMove = None; marbleCoords=(startCoords color) })
             let marbles = 
                 players 
                 |> List.collect (fun player -> 
@@ -54,6 +97,21 @@ type Game = {
                 | [] -> board
             let board = Board.create() |> loadBoard marbles
             { board = board; players=players; isSuperJump=isSuperJump }
+    static member doBestMove : StrategyBestMove -> Game -> int -> Game =
+        fun (bestMove:StrategyBestMove) (game:Game) (turn:int) ->
+            let mutable player = game.players.[turn]
+            let playerBoardMove moveFrom moveTo =
+                player <- { 
+                    id = player.id; 
+                    color = player.color; 
+                    lastMove = Some(moveFrom, moveTo);
+                    marbleCoords = player.marbleCoords |> Array.map (fun c -> if c = moveFrom then moveTo else c) }
+                Board.move moveFrom moveTo
+            let doBoardMove = (bestMove >>* playerBoardMove) game player
+            { board = game.board |> doBoardMove
+              players = game.players |> List.map (fun p -> if p.id = player.id then player else p)
+              isSuperJump = game.isSuperJump }
+and StrategyBestMove = Game -> Player -> MarbleCoord * MarbleCoord
 
 type internal Jump = LaneCoord list
 
@@ -92,6 +150,29 @@ let rec private jumpsSpan (game:Game) (jump:Jump) =
                         yield nextJumpStep::jump
                         yield! jumpsSpan game currentJump }
           
+let private notSelfJumps selfPosition (jumps:seq<Jump>) =
+    let isJumpOver fromCoord toCoord middleCoord =
+        match commonAxis fromCoord toCoord with
+        | None -> failwith "Logic error, jump with no jump axis!"
+        | Some(axis) ->
+            let sc = toAxisLaneCoord axis fromCoord
+            let ec = toAxisLaneCoord axis toCoord
+            if (Math.Abs(sc.index - ec.index) < 2)
+            then false
+            else
+                let jumpOverCoord = { 
+                        index = (sc.index + ec.index) / 2
+                        row = sc.row 
+                        rot = sc.rot } 
+                jumpOverCoord =* middleCoord
+    seq { for jump in jumps do
+            let ja = jump |> List.toArray
+            let jumpPairs = Array.zip (ja.[0..ja.Length-2]) (ja.[1..ja.Length-1])
+            let isJumpOver = Array.Exists(jumpPairs, (fun (a,b) -> isJumpOver a b selfPosition ))
+            if isJumpOver
+            then yield! Seq.empty
+            else yield jump }
+
 let private distinctJumps (jumps:seq<Jump>) = 
     let jumpArray = jumps |> Seq.toArray
     let jumpCount = jumpArray.Length
@@ -106,4 +187,5 @@ let private distinctJumps (jumps:seq<Jump>) =
             else yield! Seq.empty }
    
 let internal allLegalMoves game marblePosition = 
-    distinctJumps (jumpsSpan game [marblePosition]) |> Seq.map (fun jump -> jump.Head)
+    notSelfJumps marblePosition (distinctJumps (jumpsSpan game [marblePosition])) 
+    |> Seq.map (fun jump -> jump.Head)

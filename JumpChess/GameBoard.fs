@@ -161,6 +161,15 @@ let internal moveGameMarble = removeGameMarble >>* addGameMarble
 let internal (=*) (c1:LaneCoord) (c2:LaneCoord) = // if are equal board locations on possibly different board axes
     (toAxisLaneCoord 0 c1) = c2 || (toAxisLaneCoord 1 c1) = c2 || (toAxisLaneCoord 2 c1) = c2 
 
+let internal commonAxis (c1:LaneCoord) (c2:LaneCoord) =
+    if (toAxisLaneCoord 0 c1).row = (toAxisLaneCoord 0 c2).row
+    then Some(0)
+    elif (toAxisLaneCoord 1 c1).row = (toAxisLaneCoord 1 c2).row
+    then Some(1)
+    elif (toAxisLaneCoord 2 c1).row = (toAxisLaneCoord 2 c2).row 
+    then Some(2)
+    else None
+
 let internal laneCoord (marbleCoord:MarbleCoord) = 
     let (axis, row, index) = marbleCoord
     { index = index; row = row; rot = axis}
